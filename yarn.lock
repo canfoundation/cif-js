@@ -692,9 +692,9 @@ camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 can-pass-js@^0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/can-pass-js/-/can-pass-js-0.9.4.tgz#5eece1dfc7edcc5e38008fb97d4dd252dd99c635"
-  integrity sha512-TRXwuA1yN121BRx1Qlc1upl8osw9gAFeAch6HCvFckXJBIRAUxjQe/M8LP5t/Pt6h83xsTd8LKabQHKSa/O4gw==
+  version "0.9.5"
+  resolved "https://registry.yarnpkg.com/can-pass-js/-/can-pass-js-0.9.5.tgz#0c41544fdb6b7d79b69e7115f17dae3f922c0651"
+  integrity sha512-jxPwI+oOPuC7wt6a6fKFJrq5VQlRN7nLztjeCZHxOPyM+2WyNv5MTrl+KoMIgGl60ibI8/nSjWe+64K6wY59Uw==
   dependencies:
     insert-css "^2.0.0"
 

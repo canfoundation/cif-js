@@ -26,7 +26,6 @@
     "format": "yarn prettier --write '{src,__tests__}/**/*.ts'",
     "lint": "tslint -p . --fix",
     "prebuild": "yarn clean",
-    "prepare": "npm run build",
     "build": "tsc --pretty",
     "test": "jest",
     "coverage": "jest --coverage",
