@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+coverage/
+node_modules/
+
+lib/
+
+.prettierignore
+yarn.lock
+*.log

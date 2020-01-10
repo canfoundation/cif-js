@@ -1,0 +1,79 @@
+{
+  "name": "cif-js",
+  "version": "0.9.0",
+  "description": "cif-js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canfoundation/cif-js"
+  },
+  "author": {
+    "name": "can-group",
+    "email": "lecle@orgos.net",
+    "url": "https://canfoundation.io"
+  },
+  "keywords": [
+    "cif",
+    "code in force"
+  ],
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index",
+  "scripts": {
+    "clean": "rimraf lib && rimraf coverage",
+    "format": "yarn prettier --write '{src,__tests__}/**/*.ts'",
+    "lint": "tslint -p . --fix",
+    "prebuild": "yarn clean",
+    "prepare": "npm run build",
+    "build": "tsc --pretty",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "watch": "yarn build -- --watch",
+    "watch:test": "jest --watch"
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "yarn tslint --fix",
+      "git add -f"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && pretty-quick --staged",
+      "pre-push": "yarn test --all"
+    }
+  },
+  "dependencies": {
+    "can-pass-js": "^0.9.4",
+    "eosjs": "^20.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.3",
+    "@types/node": "^10.11.4",
+    "@types/node-fetch": "^2.5.4",
+    "coveralls": "^3.0.2",
+    "dotenv-extended": "^2.5.0",
+    "husky": "^3.1.0",
+    "jest": "^23.6.0",
+    "lint-staged": "^9.5.0",
+    "node-fetch": "^2.6.0",
+    "prettier": "^1.14.3",
+    "pretty-quick": "^2.0.1",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^23.10.3",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "globalSetup": "./test-config.ts",
+    "restoreMocks": true
+  }
+}
