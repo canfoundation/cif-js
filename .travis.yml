@@ -1,7 +1,13 @@
 language: node_js
 node_js:
-  - 'node' # use latest stable nodejs version
-script:
-  - npm run coverage # jest test with coverage flag does coverage too
-after_script:
-  - 'cat coverage/lcov.info | ./node_modules/.bin/coveralls' # sends the coverage report to coveralls
+  - '10'
+deploy:
+  provider: npm
+  edge: true
+  email: badgecrypto@gmail.com
+  api_key:
+    secure: 'LFxsRK9rNJqhEVEjy0M35IE61PG6Emc1+7OMQBCxAWF2ntgg6f/3cqn/xkYIHJ59GKGE2W0NcA75DMTqdIK2Cdx7REjg0rAVXElDeh/+JXC7V6/JwI0rP8qTt0ytU/hv7dl4eyfFcqNdxMZyotG1jwG/KeQgbPKt/bFk7e6ECmWqbXz4kQ/a5GzRTVsIgaxYHt3jEVNI9FlFdJ658mf0hnzooVYhdmwAFrAeFvU9HR4MSr58MocGknNs3CfpQXbKfYsttwR6qvpxoDbv/4AKX3tn+xV408UJDPSqg8NlMU5KpXS572tMaevBRoW9X7weufAYqQQHGVJIJ2yPRDzQdlCkk5zdpvcvo9LmpYiAQNJx5zQBbL9UlX78zU8CziVrMgmHYSlbYqJ4+wsXCcMDyhUlLKoCjuCEosvu4KRjxtXB/eZcFufWDl7Y2r9C7hYXBh44RH9tXXVr702ZgJfGmUzCO6JBOv9frdxXKHxlbrnAPHaaVst9TIJnF4oS48VcvBpcgL8oG/IAcar0iI0by6h++OMjbxlASSS85DG0Z0Ca4R2MO7WesUIpTIo8qllZcX1K2qDVel5IIXUf8WRJzImySjjQy3F5yktII+MTJnlxmypLd/moTN2s46qMc1ErXbb8qc6OvyGnvM2U9wzc38eCoQjpI02CaW8mWQTr09M='
+  on:
+    tags: true
+    branch: master
+    repo: canfoundation/cif-js

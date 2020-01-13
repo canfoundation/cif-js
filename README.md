@@ -1,24 +1,17 @@
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-
-[![Build Status](https://travis-ci.org/{{github-user-name}}/{{github-app-name}}.svg?branch=master)](https://travis-ci.org/{{github-user-name}}/{{github-app-name}}.svg?branch=master)
-
-[![npm version](https://travis-ci.org/{{github-user-name}}/{{github-app-name}}.svg)](https://travis-ci.org/{{github-user-name}}/{{github-app-name}})
-
 # Code in force sdk
 
-Code in force SDK provides functions for easily interacting with Governance Design APIs.
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![Build Status](https://travis-ci.org/canfoundation/cif-js.svg?branch=master)](https://travis-ci.org/canfoundation/cif-js)
 
-Documentation can be found [here](https://travis-ci.org/{{github-user-name}}/{{github-app-name}}/doc)
+Code in force SDK provides functions for easily interacting with Governance Design APIs.
 
 # Installation
 
 ### NPM
 
-The official distribution package can be found at [npm](https://travis-ci.org/{{github-user-name}}/{{github-app-name}}).
+[![NPM](https://img.shields.io/npm/v/cif-js.svg)](https://www.npmjs.org/package/cif-js)
 
-### Add dependency to your project
-
-`yarn add http://git.baikal.io/can/cif-js.git`
+[![https://nodei.co/npm/cif-js.png?downloads=true&downloadRank=true&stars=true](https://nodei.co/npm/cif-js.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/cif-js)
 
 # Below is a list of supported Actions:
 

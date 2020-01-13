@@ -1,12 +1,9 @@
-# gitignore
-
 coverage/
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .nyc_output
-lib
 lib_test
 
 # npmignore
@@ -14,3 +11,4 @@ lib_test
 src/
 __tests__/
 .vscode/
+.idea/
