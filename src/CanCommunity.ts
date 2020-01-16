@@ -216,8 +216,8 @@ export class CanCommunity {
   }
 
   async setFillingRuleForPosition(input: SetFillingRuleForPositionInput): Promise<any> {
-    const startAtEpoch = new Date(input.start_at).getTime();
-    const endAtEpoch = new Date(input.end_at).getTime();
+    const startAtEpoch = new Date(input.start_at).getTime() / 1000; // second unit
+    const endAtEpoch = new Date(input.end_at).getTime() / 1000; // second unit
     const packedParams = await serializeActionData(this.config, ACTIONS_NAME.SET_FILLING_RULE_FOR_POSITION, {
       community_account: input.community_account,
       pos_id: input.pos_id,
