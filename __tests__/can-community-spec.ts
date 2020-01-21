@@ -3,36 +3,50 @@ import * as fetch from 'node-fetch';
 // tslint:disable-next-line:no-implicit-dependencies
 import { TextDecoder, TextEncoder } from 'util';
 import { CanCommunity } from '../src/CanCommunity';
-import { CODE_IDS, ACTIONS_NAME } from '../src/utils/constant';
+import { ACTIONS_NAME, CODE_IDS, SIGN_TRX_METHOD } from '../src/utils/constant';
 import {
-  SetCredentialsInput,
-  CreateCommunityInput,
-  ExecCodeInput,
+  AppointPositionInput,
+  ApprovePositionInput,
   CreateCodeInput,
-  SetRightHolderForCodeInput,
-  SetCollectionRuleForCodeInput,
-  VoteForCodeInput,
-  SetRightHolderForPositionInput,
-  VoteForPositionInput,
-  SetFillingRuleForPositionInput,
-  NominatePositionInput,
+  CreateCommunityInput,
   CreatePositionInput,
   DismissPositionInput,
-  ApprovePositionInput,
-  AppointPositionInput,
-} from '../src/types/canCommunity';
+  ExecCodeInput,
+  NominatePositionInput,
+  PositionFillingType,
+  SetCollectionRuleForCodeInput,
+  SetCredentialsInput,
+  SetFillingRuleForPositionInput,
+  SetRightHolderForCodeInput,
+  SetRightHolderForPositionInput,
+  SignTrxOption,
+  VoteForCodeInput,
+  VoteForPositionInput,
+} from '../src/types/can-community-types';
 
-describe('test governance design api', () => {
+describe.skip('test governance design api', () => {
   const canAccountCreator = 'creator.can';
-  const canPassApi = new CanCommunity('leonardo', '1.0', {
-    // @ts-ignore
-    fetch,
-    canUrl: process.env.app__can_main_net_url,
-    // @ts-ignore
-    textEncoder: new TextEncoder(),
-    textDecoder: new TextDecoder(),
-    governanceAccount: process.env.app__can_governance_account,
-  });
+  const signOption: SignTrxOption = {
+    userId: 'user-id-test',
+    signTrxMethod: SIGN_TRX_METHOD.CAN_PASS,
+  };
+
+  const canPassApi = new CanCommunity(
+    {
+      // @ts-ignore
+      fetch,
+      canUrl: process.env.app__can_main_net_url,
+      // @ts-ignore
+      textEncoder: new TextEncoder(),
+      textDecoder: new TextDecoder(),
+      governanceAccount: process.env.app__can_governance_account,
+    },
+    {
+      clientId: 'leonardo',
+      version: '1.0',
+      fetch,
+    },
+  );
 
   it('should set Credentials Input', async () => {
     const input: SetCredentialsInput = {
@@ -48,6 +62,8 @@ describe('test governance design api', () => {
     spyOnTransact.mockResolvedValue('createCommunityRes');
 
     const input: CreateCommunityInput = {
+      signOption,
+      initialCAT: '10.0000 CAT',
       creator: canAccountCreator,
       community_account: 'community413',
       community_name: 'my community account',
@@ -66,9 +82,10 @@ describe('test governance design api', () => {
     spyOnTransact.mockResolvedValue('execCodeRes');
 
     const input: ExecCodeInput = {
+      signOption,
       community_account: 'community413',
       exec_account: canAccountCreator,
-      code_id: 'co.amend',
+      code_id: CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
       code_action: 'createcode',
       packed_params: '3048f0d94d2d25430000c8586590b1ca208242d3ccab3665020000c858e5608c310040c62a0b71ce3900',
     };
@@ -82,9 +99,9 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const createCodeInput: CreateCodeInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
-      code_id: 'test.collect',
       contract_name: process.env.app__can_governance_account,
       code_actions: ['createCodeUser1', 'createCodeUser2'],
       exec_type: 1,
@@ -106,9 +123,9 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: SetRightHolderForCodeInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
-      code_id: 'po.create',
       right_accounts: ['creator.can'],
       pos_ids: [],
     };
@@ -129,9 +146,9 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: SetCollectionRuleForCodeInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
-      code_id: 'test.collect',
       right_accounts: [canAccountCreator],
       pass_rule: 55,
       execution_duration: 600,
@@ -154,6 +171,7 @@ describe('test governance design api', () => {
     spyOnTransact.mockResolvedValue('voteForCodeRes');
 
     const input: VoteForCodeInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       proposal_id: '1',
@@ -169,6 +187,7 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: SetRightHolderForPositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -191,6 +210,7 @@ describe('test governance design api', () => {
     spyOnTransact.mockResolvedValue('voteForPositionRes');
 
     const input: VoteForPositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -207,6 +227,7 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: SetFillingRuleForPositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -233,6 +254,7 @@ describe('test governance design api', () => {
     spyOnTransact.mockResolvedValue('nominatePositionRes');
 
     const input: NominatePositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -247,6 +269,8 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: CreatePositionInput = {
+      signOption,
+      filling_through: PositionFillingType.APPOINTMENT,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_name: 'Lecle leader',
@@ -269,6 +293,7 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: ApprovePositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -290,6 +315,7 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: DismissPositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community413',
       pos_id: '1',
@@ -312,6 +338,7 @@ describe('test governance design api', () => {
     spyOnExecCode.mockResolvedValue('execCodeRes');
 
     const input: AppointPositionInput = {
+      signOption,
       exec_account: canAccountCreator,
       community_account: 'community143',
       pos_id: '1',

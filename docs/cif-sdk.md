@@ -9,7 +9,7 @@ const config = {
   canUrl: 'http://18.182.95.163:8888',
   textEncoder: new TextEncoder(),
   textDecoder: new TextEncoder(),
-  governanceAccount: 'governance22',
+  governanceAccount: 'governance23',
   fetch,
 };
 ```
@@ -156,7 +156,7 @@ const input = {
   exec_account: 'creator.can',
   community_account: 'community413',
   code_id: 'test.collect',
-  contract_name: 'governance22',
+  contract_name: 'governance23',
   code_actions: ['createCodeUser1', 'createCodeUser2'],
   exec_type: 1,
 };

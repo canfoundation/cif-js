@@ -9,7 +9,7 @@ const canCommunity = new CanCommunity('leonardo', '1.0', {
   // @ts-ignore
   textEncoder: new TextEncoder(),
   textDecoder: new TextDecoder(),
-  governanceAccount: 'governance22',
+  governanceAccount: 'governance23',
 });
 
 console.log('canCommunity', canCommunity);

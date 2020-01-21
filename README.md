@@ -101,7 +101,7 @@ canCommunity CanCommunity {
      textEncoder: TextEncoder { encoding: 'utf-8' },
      textDecoder:
       TextDecoder { encoding: 'utf-8', fatal: false, ignoreBOM: false },
-     governanceAccount: 'governance22' },
+     governanceAccount: 'governance23' },
   canRpc:
    JsonRpc {
      endpoint: 'http://18.182.95.163:8888',

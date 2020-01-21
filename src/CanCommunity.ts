@@ -1,45 +1,42 @@
 import CanPass, { CanPassApiConfig } from 'can-pass-js';
 import { JsonRpc } from 'eosjs';
 import {
-  SetCredentialsInput,
+  AppointPositionInput,
+  ApprovePositionInput,
   CanCommunityOptions,
-  CreateCommunityInput,
-  SetRightHolderForCodeInput,
   CreateCodeInput,
-  ExecCodeInput,
-  SetCollectionRuleForCodeInput,
-  VoteForCodeInput,
-  SetRightHolderForPositionInput,
-  VoteForPositionInput,
-  SetFillingRuleForPositionInput,
-  NominatePositionInput,
+  CreateCommunityInput,
   CreatePositionInput,
   DismissPositionInput,
-  ApprovePositionInput,
-  AppointPositionInput,
+  ExecCodeInput,
   ExecProposalInput,
-} from './types/canCommunity';
-import { ACTIONS_NAME, CODE_IDS, TABLE } from './utils/constant';
+  NominatePositionInput,
+  SetCollectionRuleForCodeInput,
+  SetCredentialsInput,
+  SetFillingRuleForPositionInput,
+  SetRightHolderForCodeInput,
+  SetRightHolderForPositionInput,
+  SignTrxOption,
+  VoteForCodeInput,
+  VoteForPositionInput,
+} from './types/can-community-types';
+import { ACTIONS_NAME, CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, TABLE } from './utils/constant';
 import { serializeActionData } from './utils/actions';
+import utils from './utils/utils';
+import { logger } from './utils/logger';
 
 export class CanCommunity {
   public init: CanPassApiConfig;
   public config: CanCommunityOptions;
   public canRpc: JsonRpc;
 
-  constructor(clientId: string, version: string, config: CanCommunityOptions, store?: string) {
-    const defaultStore = 'memory';
-    const { canUrl, fetch } = config;
-    this.init = CanPass.init({
-      clientId,
-      version: version || '1.0',
-      store: store || defaultStore,
-      fetch,
-    });
+  constructor(config: CanCommunityOptions, canPassApiConfig?: CanPassApiConfig) {
+    if (canPassApiConfig) {
+      this.init = CanPass.init(canPassApiConfig);
+    }
+
     this.config = config;
-    this.canRpc = new JsonRpc(canUrl, {
-      fetch,
-    });
+    this.canRpc = utils.makeRpc(config.fetch, config.canUrl);
   }
 
   initLoginButton() {
@@ -54,7 +51,7 @@ export class CanCommunity {
   }
 
   pushAction(action: string, actor: string, input: any) {
-    const transactionAction = {
+    return {
       account: this.config.governanceAccount,
       name: action,
       authorization: [
@@ -65,68 +62,105 @@ export class CanCommunity {
       ],
       data: input,
     };
-    return transactionAction;
+  }
+
+  signTrx(signOption: SignTrxOption, trx: any) {
+    switch (signOption.signTrxMethod) {
+      case SIGN_TRX_METHOD.MANUAL:
+        return trx;
+      case SIGN_TRX_METHOD.CAN_PASS:
+      default:
+        if (!signOption.userId) {
+          logger.error('missing `userId` in `signOption`', signOption);
+          throw new Error('missing `userId` in `signOption`');
+        }
+        return CanPass.signTx(trx, signOption.userId);
+    }
   }
 
   createCommunity(input: CreateCommunityInput) {
-    return CanPass.signTx(
-      {
-        actions: [
-          {
-            account: 'eosio.token',
-            authorization: [{ actor: input.creator, permission: 'active' }],
-            data: {
-              from: input.creator,
-              memo: input.community_account,
-              quantity: '10.0000 CAT',
-              to: this.config.governanceAccount,
-            },
-            name: 'transfer',
+    const trx = {
+      actions: [
+        {
+          account: 'eosio.token',
+          authorization: [{ actor: input.creator, permission: 'active' }],
+          data: {
+            from: input.creator,
+            memo: input.community_account,
+            quantity: input.initialCAT || '10.0000 CAT',
+            to: this.config.governanceAccount,
           },
-          this.pushAction(ACTIONS_NAME.CREATE_COMMUNITY, input.creator, {
-            creator: input.creator,
-            community_account: input.community_account,
-            community_name: input.community_name,
-            member_badge: input.member_badge,
-            community_url: input.community_url,
-            description: input.description,
-            create_default_code: input.create_default_code,
-          }),
-        ],
-      },
-      input.creator,
-    );
+          name: ACTIONS_NAME.CREATE_COMMUNITY_ACCOUNT,
+        },
+        this.pushAction(ACTIONS_NAME.CREATE_COMMUNITY, input.creator, {
+          creator: input.creator,
+          community_account: input.community_account,
+          community_name: input.community_name,
+          member_badge: input.member_badge,
+          community_url: input.community_url,
+          description: input.description,
+          create_default_code: input.create_default_code,
+        }),
+      ],
+    };
+
+    return this.signTrx(input.signOption, trx);
   }
 
-  execCode(input: ExecCodeInput): Promise<any> {
-    return CanPass.signTx(
-      {
-        actions: [
-          this.pushAction(ACTIONS_NAME.EXECUTE_CODE, input.exec_account, {
-            community_account: input.community_account,
-            exec_account: input.exec_account,
-            code_id: input.code_id,
-            code_action: input.code_action,
-            packed_params: input.packed_params,
-          }),
-        ],
-      },
-      input.exec_account,
-    );
+  async execCode(input: ExecCodeInput): Promise<any> {
+    const code = await utils.findCode(this.config, input.community_account, input.code_id);
+
+    let trx;
+
+    switch (code.code_exec_type) {
+      case EXECUTION_TYPE.SOLE_DECISION:
+        trx = {
+          actions: [
+            this.pushAction(ACTIONS_NAME.EXECUTE_CODE, input.exec_account, {
+              community_account: input.community_account,
+              exec_account: input.exec_account,
+              code_id: code.code_id,
+              code_action: input.code_action,
+              packed_params: input.packed_params,
+            }),
+          ],
+        };
+        break;
+      case EXECUTION_TYPE.COLLECTIVE_DECISION:
+        if (!input.proposal_name) {
+          throw new Error('missing `input.proposal_name`');
+        }
+
+        trx = {
+          actions: [
+            this.pushAction(ACTIONS_NAME.PROPOSE_CODE, input.exec_account, {
+              community_account: input.community_account,
+              exec_account: input.exec_account,
+              proposer: input.exec_account,
+              proposal_name: input.proposal_name,
+              code_id: code.code_id,
+              code_action: input.code_action,
+              data: input.packed_params,
+            }),
+          ],
+        };
+        break;
+    }
+
+    return this.signTrx(input.signOption, trx);
   }
 
   async createCode(input: CreateCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ACTIONS_NAME.CREATE_CODE, {
       community_account: input.community_account,
-      code_id: input.code_id,
+      code_id: CODE_IDS.CREATE_CODE,
       contract_name: input.contract_name,
       code_actions: input.code_actions,
       exec_type: input.exec_type,
     });
 
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.CREATE_CODE,
       code_action: ACTIONS_NAME.CREATE_CODE,
       packed_params: packedParams,
@@ -136,13 +170,12 @@ export class CanCommunity {
   async setRightHolderForCode(input: SetRightHolderForCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ACTIONS_NAME.SET_RIGHT_HOLDER_FOR_CODE, {
       community_account: input.community_account,
-      code_id: input.code_id,
+      code_id: CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
       right_accounts: input.right_accounts,
       pos_ids: input.pos_ids,
     });
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
       code_action: ACTIONS_NAME.SET_RIGHT_HOLDER_FOR_CODE,
       packed_params: packedParams,
@@ -152,15 +185,14 @@ export class CanCommunity {
   async setCollectionRuleForCode(input: SetCollectionRuleForCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ACTIONS_NAME.SET_COLLECTION_RULE_FOR_CODE, {
       community_account: input.community_account,
-      code_id: input.code_id,
+      code_id: CODE_IDS.SET_COLLECTION_RULE_FOR_CODE,
       right_accounts: input.right_accounts,
       pass_rule: input.pass_rule,
       execution_duration: input.execution_duration,
       vote_duration: input.vote_duration,
     });
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.SET_COLLECTION_RULE_FOR_CODE,
       code_action: ACTIONS_NAME.SET_COLLECTION_RULE_FOR_CODE,
       packed_params: packedParams,
@@ -168,19 +200,17 @@ export class CanCommunity {
   }
 
   voteForCode(input: VoteForCodeInput) {
-    return CanPass.signTx(
-      {
-        actions: [
-          this.pushAction(ACTIONS_NAME.VOTE_FOR_CODE, input.exec_account, {
-            community_account: input.community_account,
-            proposal_id: input.proposal_id,
-            voter: input.exec_account,
-            vote_status: input.vote_status,
-          }),
-        ],
-      },
-      input.exec_account,
-    );
+    return this.signTrx(input.signOption, {
+      actions: [
+        this.pushAction(ACTIONS_NAME.VOTE_FOR_CODE, input.exec_account, {
+          community_account: input.community_account,
+          // proposal_id is changed to proposal_name (string - eosio name)
+          proposal_id: input.proposal_id,
+          voter: input.exec_account,
+          vote_status: input.vote_status,
+        }),
+      ],
+    });
   }
 
   async setRightHolderForPosition(input: SetRightHolderForPositionInput): Promise<any> {
@@ -190,8 +220,7 @@ export class CanCommunity {
       right_accounts: input.right_accounts,
     });
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.SET_RIGHT_HOLDER_FOR_POSITION,
       code_action: ACTIONS_NAME.SET_RIGHT_HOLDER_FOR_POSITION,
       packed_params: packedParams,
@@ -199,20 +228,17 @@ export class CanCommunity {
   }
 
   voteForPosition(input: VoteForPositionInput) {
-    return CanPass.signTx(
-      {
-        actions: [
-          this.pushAction(ACTIONS_NAME.VOTE_FOR_POSITION, input.exec_account, {
-            community_account: input.community_account,
-            pos_id: input.pos_id,
-            voter: input.exec_account,
-            candidate: input.candidate,
-            vote_status: input.vote_status,
-          }),
-        ],
-      },
-      input.exec_account,
-    );
+    return this.signTrx(input.signOption, {
+      actions: [
+        this.pushAction(ACTIONS_NAME.VOTE_FOR_POSITION, input.exec_account, {
+          community_account: input.community_account,
+          pos_id: input.pos_id,
+          voter: input.exec_account,
+          candidate: input.candidate,
+          vote_status: input.vote_status,
+        }),
+      ],
+    });
   }
 
   async setFillingRuleForPosition(input: SetFillingRuleForPositionInput): Promise<any> {
@@ -228,8 +254,7 @@ export class CanCommunity {
       right_accounts: input.right_accounts,
     });
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.SET_FILLING_RULE_FOR_POSITION,
       code_action: ACTIONS_NAME.SET_FILLING_RULE_FOR_POSITION,
       packed_params: packedParams,
@@ -237,18 +262,15 @@ export class CanCommunity {
   }
 
   nominatePosition(input: NominatePositionInput) {
-    return CanPass.signTx(
-      {
-        actions: [
-          this.pushAction(ACTIONS_NAME.NOMINATE_POSITION, input.exec_account, {
-            community_account: input.community_account,
-            pos_id: input.pos_id,
-            owner: input.exec_account,
-          }),
-        ],
-      },
-      input.exec_account,
-    );
+    return this.signTrx(input.signOption, {
+      actions: [
+        this.pushAction(ACTIONS_NAME.NOMINATE_POSITION, input.exec_account, {
+          community_account: input.community_account,
+          pos_id: input.pos_id,
+          owner: input.exec_account,
+        }),
+      ],
+    });
   }
 
   async createPosition(input: CreatePositionInput): Promise<any> {
@@ -256,11 +278,11 @@ export class CanCommunity {
       community_account: input.community_account,
       pos_name: input.pos_name,
       max_holder: input.max_holder,
+      filling_through: input.filling_through,
     });
 
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.CREATE_POSITION,
       code_action: ACTIONS_NAME.CREATE_POSITION,
       packed_params: packedParams,
@@ -275,8 +297,7 @@ export class CanCommunity {
     });
 
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.DISMISS_POSITION,
       code_action: ACTIONS_NAME.DISMISS_POSITION,
       packed_params: packedParams,
@@ -290,8 +311,7 @@ export class CanCommunity {
     });
 
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.APPROVE_POSITION,
       code_action: ACTIONS_NAME.APPROVE_POSITION,
       packed_params: packedParams,
@@ -306,8 +326,7 @@ export class CanCommunity {
     });
 
     return this.execCode({
-      community_account: input.community_account,
-      exec_account: input.exec_account,
+      ...input,
       code_id: CODE_IDS.APPOINT_POSITION,
       code_action: ACTIONS_NAME.APPOINT_POSITION,
       packed_params: packedParams,
@@ -315,17 +334,14 @@ export class CanCommunity {
   }
 
   execProposal(input: ExecProposalInput) {
-    return CanPass.signTx(
-      {
-        actions: [
-          this.pushAction(ACTIONS_NAME.EXEC_PROPOSAL, input.exec_account, {
-            community_account: input.community_account,
-            proposal_id: input.proposal_id,
-          }),
-        ],
-      },
-      input.exec_account,
-    );
+    return this.signTrx(input.signOption, {
+      actions: [
+        this.pushAction(ACTIONS_NAME.EXEC_PROPOSAL, input.exec_account, {
+          community_account: input.community_account,
+          proposal_id: input.proposal_id,
+        }),
+      ],
+    });
   }
 
   async getTableRows(

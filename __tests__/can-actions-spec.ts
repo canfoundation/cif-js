@@ -3,7 +3,7 @@ import { TextDecoder, TextEncoder } from 'util';
 // tslint:disable-next-line:no-implicit-dependencies
 import * as fetch from 'node-fetch';
 import { serializeActionData } from '../src/utils/actions';
-import { CanCommunityOptions } from '../src/types/canCommunity';
+import { CanCommunityOptions } from '../src/types/can-community-types';
 
 describe('test action util', () => {
   const options: CanCommunityOptions = {
@@ -13,7 +13,7 @@ describe('test action util', () => {
     // @ts-ignore
     textEncoder: new TextEncoder(),
     textDecoder: new TextDecoder(),
-    governanceAccount: process.env.app__can_governance_account,
+    governanceAccount: 'governance22',
   };
 
   it('should pack a hex string - contract action params', async () => {
@@ -21,7 +21,7 @@ describe('test action util', () => {
     const data = {
       community_account: 'community413',
       code_id: 'test.test1',
-      contract_name: process.env.app__can_governance_account,
+      contract_name: options.governanceAccount,
       code_actions: ['any_string', 'any_string'],
       exec_type: 0,
     };
