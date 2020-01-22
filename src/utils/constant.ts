@@ -1,10 +1,3 @@
-export enum DEFAULT_NUMBER {
-  CAT = '10.0000 CAT',
-}
-export enum EOS_ACCOUNT {
-  NAME = 'eosio.token',
-}
-
 export enum SIGN_TRX_METHOD {
   CAN_PASS = 'CAN_PASS',
   MANUAL = 'MANUAL',
@@ -13,26 +6,6 @@ export enum SIGN_TRX_METHOD {
 export enum EXECUTION_TYPE {
   SOLE_DECISION = 0,
   COLLECTIVE_DECISION,
-}
-
-export enum ACTIONS_NAME {
-  CREATE_COMMUNITY_ACCOUNT = 'transfer',
-  CREATE_COMMUNITY = 'create',
-  CREATE_CODE = 'createcode',
-  EXECUTE_CODE = 'execcode',
-  PROPOSE_CODE = 'proposecode',
-  SET_RIGHT_HOLDER_FOR_CODE = 'setrightcode',
-  SET_COLLECTION_RULE_FOR_CODE = 'setcollectrl',
-  VOTE_FOR_CODE = 'voteforcode',
-  SET_RIGHT_HOLDER_FOR_POSITION = 'setrightpos',
-  VOTE_FOR_POSITION = 'voteforpos',
-  SET_FILLING_RULE_FOR_POSITION = 'setfillrule',
-  NOMINATE_POSITION = 'nominatepos',
-  CREATE_POSITION = 'createpos',
-  DISMISS_POSITION = 'dissmisspos',
-  APPROVE_POSITION = 'approvepos',
-  APPOINT_POSITION = 'appointpos',
-  EXEC_PROPOSAL = 'execproposal',
 }
 
 export enum CODE_IDS {

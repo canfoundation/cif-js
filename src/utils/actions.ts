@@ -6,7 +6,7 @@ let governanceContract;
 
 async function serializeActionData(options: CanCommunityOptions, actionName: string, data: any): Promise<string> {
   const canApi = utils.makeCanApi(options);
-  const governanceAccount: string = options.governanceAccount;
+  const governanceAccount: string = options.code;
 
   /**
    * TODO consider to pack governance contract in final build

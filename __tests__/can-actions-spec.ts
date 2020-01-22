@@ -13,7 +13,7 @@ describe('test action util', () => {
     // @ts-ignore
     textEncoder: new TextEncoder(),
     textDecoder: new TextDecoder(),
-    governanceAccount: 'governance22',
+    code: 'governance22',
   };
 
   it('should pack a hex string - contract action params', async () => {
@@ -21,7 +21,7 @@ describe('test action util', () => {
     const data = {
       community_account: 'community413',
       code_id: 'test.test1',
-      contract_name: options.governanceAccount,
+      contract_name: options.code,
       code_actions: ['any_string', 'any_string'],
       exec_type: 0,
     };

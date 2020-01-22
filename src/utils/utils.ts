@@ -1,51 +1,33 @@
 import { CODE_IDS, TABLE } from './constant';
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
-import { JsonRpc, Api as EOSAPI } from 'eosjs';
-import { CanCommunityOptions, EosName } from '../types/can-community-types';
+import { Api as EOSAPI } from 'eosjs';
+import { CanCommunityOptions } from '../types/can-community-types';
 import { logger } from './logger';
-
-let canApi: EOSAPI;
-let rpc: JsonRpc;
-
-function makeRpc(fetch, canUrl) {
-  if (rpc) {
-    return rpc;
-  }
-
-  return (rpc = new JsonRpc(canUrl, {
-    fetch,
-  }));
-}
+import app from '../app';
+import { EosName } from '../smart-contract-types/base-types';
 
 function makeCanApi(options: CanCommunityOptions) {
-  if (canApi) {
-    return canApi;
-  }
-
   const { textEncoder, textDecoder } = options;
-
   const signatureProvider: JsSignatureProvider = new JsSignatureProvider([]);
 
-  return (canApi = new EOSAPI({
-    rpc: makeRpc(options.fetch, options.canUrl),
+  return new EOSAPI({
+    rpc: app.rpc,
     signatureProvider,
     textEncoder,
     textDecoder,
-  }));
+  });
 }
 
 /**
  * Each CODE_IDS has unique integer id for each position for example.
  * This is function which help get the integer id
- * @param options
+ * @param code
  * @param community_account
  * @param code_id
  */
-async function findCode(options: CanCommunityOptions, community_account: EosName, code_id: CODE_IDS): Promise<any> {
-  makeRpc(options.fetch, options.canUrl);
-
-  const res = await rpc.get_table_rows({
-    code: options.governanceAccount,
+async function findCode(code: EosName, community_account: EosName, code_id: CODE_IDS): Promise<any> {
+  const res = await app.rpc.get_table_rows({
+    code,
     scope: community_account,
     table: TABLE.CODES,
     lower_bound: code_id,
@@ -60,7 +42,6 @@ async function findCode(options: CanCommunityOptions, community_account: EosName
 }
 
 export default {
-  makeRpc,
   makeCanApi,
   findCode,
 };

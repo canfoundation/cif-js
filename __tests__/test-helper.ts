@@ -10,7 +10,7 @@ export const options: CanCommunityOptions = {
   // @ts-ignore
   textEncoder: new TextEncoder(),
   textDecoder: new TextDecoder(),
-  governanceAccount: process.env.app__can_governance_account,
+  code: process.env.app__can_governance_account,
 };
 
 it('should pass test', done => {
