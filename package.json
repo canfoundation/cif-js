@@ -25,7 +25,7 @@
     "clean": "rimraf lib && rimraf coverage",
     "format": "yarn prettier --write '{src,__tests__}/**/*.ts'",
     "lint": "tslint -p . --fix",
-    "prebuild": "yarn clean",
+    "prebuild": "yarn clean && yarn make-types",
     "prepare": "npm run build",
     "prepublish": "npm run build",
     "build": "tsc --pretty",
