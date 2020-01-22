@@ -98,7 +98,12 @@ export class CanCommunity {
    * @param packed_params
    * @param execCodeInput
    */
-  async execCode(code_id: CODE_IDS, code_action: string, packed_params: string, execCodeInput: ExecCodeInput): Promise<any> {
+  async execCode(
+    code_id: CODE_IDS,
+    code_action: string,
+    packed_params: string,
+    execCodeInput: ExecCodeInput = {},
+  ): Promise<any> {
     const community_account = this.config.signOption.communityCanAccount;
     const canAccount = this.config.signOption.canAccount;
     const { proposal_name } = execCodeInput;
@@ -144,19 +149,19 @@ export class CanCommunity {
     return this.signTrx(trx);
   }
 
-  async createCode(input: Createcode, execCodeInput: ExecCodeInput): Promise<any> {
+  async createCode(input: Createcode, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATECODE, input);
 
     return this.execCode(CODE_IDS.CREATE_CODE, ActionNameEnum.CREATECODE, packedParams, execCodeInput);
   }
 
-  async setRightHolderForCode(input: Setrightcode, execCodeInput: ExecCodeInput): Promise<any> {
+  async setRightHolderForCode(input: Setrightcode, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.SETRIGHTCODE, input);
 
     return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, ActionNameEnum.SETRIGHTCODE, packedParams, execCodeInput);
   }
 
-  async setCollectionRuleForCode(input: Setcollectrl, execCodeInput: ExecCodeInput): Promise<any> {
+  async setCollectionRuleForCode(input: Setcollectrl, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.SETCOLLECTRL, input);
 
     return this.execCode(CODE_IDS.SET_COLLECTION_RULE_FOR_CODE, ActionNameEnum.SETCOLLECTRL, packedParams, execCodeInput);
@@ -168,7 +173,7 @@ export class CanCommunity {
     });
   }
 
-  async setRightHolderForPosition(input: Setrightcode, execCodeInput: ExecCodeInput): Promise<any> {
+  async setRightHolderForPosition(input: Setrightcode, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.SETRIGHTCODE, input);
 
     return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_POSITION, ActionNameEnum.SETRIGHTCODE, packedParams, execCodeInput);
@@ -186,25 +191,25 @@ export class CanCommunity {
     });
   }
 
-  async createPosition(input: Createpos, execCodeInput: ExecCodeInput): Promise<any> {
+  async createPosition(input: Createpos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, input);
 
     return this.execCode(CODE_IDS.CREATE_POSITION, ActionNameEnum.CREATEPOS, packedParams, execCodeInput);
   }
 
-  async dismissPosition(input: Dismisspos, execCodeInput: ExecCodeInput): Promise<any> {
+  async dismissPosition(input: Dismisspos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.DISMISSPOS, input);
 
     return this.execCode(CODE_IDS.DISMISS_POSITION, ActionNameEnum.DISMISSPOS, packedParams, execCodeInput);
   }
 
-  async approvePosition(input: Approvepos, execCodeInput: ExecCodeInput): Promise<any> {
+  async approvePosition(input: Approvepos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.APPROVEPOS, input);
 
     return this.execCode(CODE_IDS.APPROVE_POSITION, ActionNameEnum.APPROVEPOS, packedParams, execCodeInput);
   }
 
-  async appointPosition(input: Appointpos, execCodeInput: ExecCodeInput): Promise<any> {
+  async appointPosition(input: Appointpos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.APPOINTPOS, input);
 
     return this.execCode(CODE_IDS.APPOINT_POSITION, ActionNameEnum.APPOINTPOS, packedParams, execCodeInput);
