@@ -27,7 +27,6 @@
     "lint": "tslint -p . --fix",
     "prebuild": "yarn clean && yarn make-types",
     "prepare": "yarn build",
-    "prepublish": "yarn build",
     "build": "tsc --pretty",
     "test": "jest",
     "coverage": "jest --coverage",
@@ -48,16 +47,17 @@
     }
   },
   "dependencies": {
-    "can-pass-js": "^0.9.8",
     "eosjs": "^20.0.0"
   },
   "devDependencies": {
+    "@types/faker": "^4.1.9",
     "@types/jest": "^23.3.3",
     "@types/lodash": "^4.14.149",
     "@types/node": "^10.11.4",
     "@types/node-fetch": "^2.5.4",
     "coveralls": "^3.0.2",
     "dotenv-extended": "^2.5.0",
+    "faker": "^4.1.0",
     "husky": "^3.1.0",
     "jest": "^23.6.0",
     "lint-staged": "^9.5.0",

@@ -1,4 +1,3 @@
-import CanPass, { CanPassApiConfig } from 'can-pass-js';
 import { CanCommunityOptions, ExecCodeInput, SignTrxOption } from './types/can-community-types';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, TABLE } from './utils/constant';
 import { serializeActionData } from './utils/actions';
@@ -24,15 +23,9 @@ import app from './app';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
-  public canPass = CanPass;
 
-  constructor(config: CanCommunityOptions, canPassApiConfig?: CanPassApiConfig) {
+  constructor(config: CanCommunityOptions, public canPass?: any) {
     app.init(config.canUrl, config.fetch);
-
-    if (canPassApiConfig) {
-      this.canPass.init(canPassApiConfig);
-    }
-
     this.config = config;
   }
 
