@@ -33,7 +33,7 @@
     "coverage": "jest --coverage",
     "watch": "yarn build -- --watch",
     "watch:test": "jest --watch",
-    "prepare-build": "yarn ts-node ./scripts/index.ts"
+    "make-types": "yarn ts-node ./scripts/index.ts"
   },
   "lint-staged": {
     "**/*.ts": [

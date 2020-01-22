@@ -6,8 +6,10 @@ let map = new Map();
 
 map.set('i64', 'number');
 map.set('uint8', 'number');
+map.set('int32', 'number');
 map.set('uint64', 'number');
 map.set('float64', 'number');
+map.set('checksum256', 'number');
 map.set('name', 'EosName');
 map.set('asset', 'CAT_Token');
 map.set('bool', 'boolean');
@@ -24,9 +26,18 @@ for (const [k, v] of map.entries()) {
 
 map = tmpMap;
 
-function typeMap(type: string) {
+function addImport(impHolder: Map<string, Set<string>>, from: string, tN: string): Map<string, Set<string>> {
+  let tmp = impHolder.get(from);
+  if (!impHolder.has(from)) {
+    tmp = new Set();
+    impHolder.set(from, tmp);
+  }
+  tmp.add(tN);
+  return impHolder;
+}
+
+function typeMap(type: string, impHolder: Map<string, Set<string>>): string {
   let typeName = map.get(type) || type;
-  let typeImport;
 
   switch (type) {
     case 'pair_name_uint64':
@@ -35,22 +46,21 @@ function typeMap(type: string) {
     case 'pair_name_int32[]':
     case 'RightHolder':
     case 'RightHolder[]':
+    case 'CodeType':
+    case 'CodeType[]':
       typeName = formatName(type);
-      typeImport = `import { ${typeName} } from './${typeName}';`;
+      addImport(impHolder, `./${typeName}`, typeName);
       break;
     case 'name':
     case 'name[]':
-      typeImport = `import { EosName } from './base-types';`;
+      addImport(impHolder, './base-types', 'EosName');
       break;
     case 'asset':
     case 'asset[]':
-      typeImport = `import { CAT_Token } from './base-types';`;
+      addImport(impHolder, './base-types', 'CAT_Token');
       break;
   }
-  return {
-    typeName,
-    typeImport,
-  };
+  return typeName;
 }
 
 function formatName(name: string) {

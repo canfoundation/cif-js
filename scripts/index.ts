@@ -24,6 +24,10 @@ const tsInterface = _.template(fs.readFileSync(path.resolve(__dirname, './TsInte
   ...templateSettings,
 });
 
+const actionNameEnum = _.template(fs.readFileSync(path.resolve(__dirname, './ActionNameEnum.hbs')).toString(), {
+  ...templateSettings,
+});
+
 function loadAbi() {
   return rpc.get_abi(process.env.app__can_governance_account);
 }
@@ -32,25 +36,39 @@ async function printOutStructs(structs) {
   for (const struct of structs) {
     const name = _.upperFirst(_.camelCase(struct.name));
     const fields = [];
-    const imports = new Set();
+    const imports = new Map<string, Set<string>>();
 
     struct.fields.forEach(f => {
-      const { typeName, typeImport } = helper.typeMap(f.type);
+      const typeName = helper.typeMap(f.type, imports);
       fields.push(`  ${f.name}: ${typeName};`);
-
-      if (typeImport) {
-        imports.add(typeImport);
-      }
     });
 
     const file = tsInterface({
       name,
       fields: fields.join('\n'),
-      imports: Array.from(imports).join('\n'),
+      imports: Array.from(imports.keys())
+        .map(k => {
+          return `import {${Array.from(imports.get(k)).join(', ')}} from '${k}';`;
+        })
+        .join('\n'),
     });
 
     fs.writeFileSync(path.resolve(__dirname, `../src/smart-contract-types/${name}.ts`), file);
   }
+}
+
+function printOutActions(actions) {
+  const enumFields = [];
+  for (const { name } of actions) {
+    enumFields.push(`${_.upperCase(name)} = '${name}'`);
+  }
+
+  fs.writeFileSync(
+    path.resolve(__dirname, `../src/smart-contract-types/ActionNameEnum.ts`),
+    actionNameEnum({
+      enumFields: enumFields.join(', \n'),
+    }),
+  );
 }
 
 async function run() {
@@ -62,9 +80,10 @@ async function run() {
 
   const { abi } = await loadAbi();
   await printOutStructs(abi.structs);
+  await printOutActions(abi.actions);
 
-  shell.exec('yarn lint');
-  shell.exec('yarn pretty-quick');
+  shell.exec('yarn lint src/smart-contract-types/*.ts');
+  shell.exec('yarn format --write src/smart-contract-types/*.ts');
 }
 
 run().catch(err => logger.error('---- run:', err));
