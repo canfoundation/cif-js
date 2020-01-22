@@ -8,10 +8,11 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import shell from 'shelljs';
-import utils from '../src/utils/utils';
 import { logger } from '../src/utils/logger';
+import app from '../src/app';
 
-const rpc = utils.makeRpc(fetch, process.env.app__can_main_net_url);
+app.init(process.env.app__can_main_net_url, fetch);
+const rpc = app.rpc;
 
 logger.debug('__dirname', __dirname);
 logger.debug('process.cwd()', process.cwd());
@@ -83,7 +84,7 @@ async function run() {
   await printOutActions(abi.actions);
 
   shell.exec('yarn lint src/smart-contract-types/*.ts');
-  shell.exec('yarn format --write src/smart-contract-types/*.ts');
+  shell.exec('yarn prettier --write src/smart-contract-types/*.ts');
 }
 
 run().catch(err => logger.error('---- run:', err));
