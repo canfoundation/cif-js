@@ -1,18 +1,17 @@
-import { JsonRpc } from 'eosjs';
 import utils from '../../src/utils/utils';
 import { options } from '../test-helper';
 import { CODE_IDS } from '../../src/utils/constant';
+import app from '../../src/app';
 
 jest.mock('eosjs');
 
 describe('test some utility functions', () => {
-  // @ts-ignore
-  const jsonRpc: jest.Mock = JsonRpc;
+  app.init(options.canUrl, options.fetch);
 
   it('should get code id', async () => {
-    const get_table_rows = jest.fn();
-    jsonRpc.mockImplementation(() => ({ get_table_rows }));
+    const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
     get_table_rows.mockResolvedValue({
+      // @ts-ignore
       rows: [
         {
           code_id: 1,
@@ -41,7 +40,7 @@ describe('test some utility functions', () => {
       more: false,
     });
 
-    const code = await utils.findCode(options, 'community242', CODE_IDS.CREATE_POSITION);
+    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CREATE_POSITION);
     expect(get_table_rows).toBeCalledWith({
       code: 'governance23',
       index_position: 2,

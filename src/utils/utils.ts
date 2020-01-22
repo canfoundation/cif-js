@@ -38,7 +38,7 @@ async function findCode(code: EosName, community_account: EosName, code_id: CODE
 
   logger.debug('---- getCodeId - get_table_rows', JSON.stringify(res));
 
-  return res.rows[0];
+  return res?.rows[0];
 }
 
 export default {
