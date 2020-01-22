@@ -44,6 +44,8 @@ export class CanCommunity {
   }
 
   signTrx(trx: any, signOption: SignTrxOption = this.config.signOption) {
+    logger.debug('signOption.signTrxMethod', signOption?.signTrxMethod);
+
     switch (signOption.signTrxMethod) {
       case SIGN_TRX_METHOD.MANUAL:
         return trx;
@@ -58,32 +60,6 @@ export class CanCommunity {
   }
 
   /**
-   * Create a new community
-   * @param input
-   * @param initialCAT example '10.0000 CAT'
-   */
-  createCommunity(input: Create, initialCAT: CAT_Token) {
-    const trx = {
-      actions: [
-        {
-          account: 'eosio.token',
-          authorization: [{ actor: input.creator, permission: 'active' }],
-          data: {
-            from: input.creator,
-            memo: input.community_account,
-            quantity: initialCAT,
-            to: this.config.code,
-          },
-          name: 'transfer',
-        },
-        this.makeAction(ActionNameEnum.CREATE, input.creator, input),
-      ],
-    };
-
-    return this.signTrx(trx);
-  }
-
-  /**
    * exec code helper
    * create action param and make request of signing transaction on behap of user
    * @param code_id
@@ -93,7 +69,7 @@ export class CanCommunity {
    */
   async execCode(
     code_id: CODE_IDS,
-    code_action: string,
+    code_action: ActionNameEnum,
     packed_params: string,
     execCodeInput: ExecCodeInput = {},
   ): Promise<any> {
@@ -138,6 +114,32 @@ export class CanCommunity {
         };
         break;
     }
+
+    return this.signTrx(trx);
+  }
+
+  /**
+   * Create a new community
+   * @param input
+   * @param initialCAT example '10.0000 CAT'
+   */
+  createCommunity(input: Create, initialCAT: CAT_Token) {
+    const trx = {
+      actions: [
+        {
+          account: 'eosio.token',
+          authorization: [{ actor: input.creator, permission: 'active' }],
+          data: {
+            from: input.creator,
+            memo: input.community_account,
+            quantity: initialCAT,
+            to: this.config.code,
+          },
+          name: 'transfer',
+        },
+        this.makeAction(ActionNameEnum.CREATE, input.creator, input),
+      ],
+    };
 
     return this.signTrx(trx);
   }

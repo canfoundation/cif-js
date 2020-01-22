@@ -22,7 +22,7 @@ export interface SignTrxOption {
   /**
    * Default is SIGN_TRX_METHOD.CAN_PASS
    */
-  signTrxMethod: SIGN_TRX_METHOD;
+  signTrxMethod?: SIGN_TRX_METHOD;
 
   canAccount: EosName;
 
