@@ -75,7 +75,6 @@ export class CanCommunity {
   ): Promise<any> {
     const community_account = this.config.signOption.communityCanAccount;
     const canAccount = this.config.signOption.canAccount;
-    const { proposal_name } = execCodeInput;
 
     const code = await utils.findCode(this.config.code, this.config.signOption.communityCanAccount, code_id);
 
@@ -96,8 +95,10 @@ export class CanCommunity {
         };
         break;
       case EXECUTION_TYPE.COLLECTIVE_DECISION:
+        let { proposal_name } = execCodeInput;
         if (!proposal_name) {
-          throw new Error('missing `proposal_name`');
+          proposal_name = utils.randomEosName();
+          logger.debug('---- missing param proposal_name, auto generate one:', proposal_name);
         }
 
         const proposeCode: Proposecode = {

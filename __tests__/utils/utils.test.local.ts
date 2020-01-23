@@ -7,7 +7,7 @@ describe('test some utility functions', () => {
   app.init(options.canUrl, options.fetch);
 
   it('should get code id', async () => {
-    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CREATE_POSITION);
+    const code = await utils.findCode(options.code, 'cifdemocomx1', CODE_IDS.CREATE_POSITION);
     expect(code.code_id).toEqual(1);
     expect(code.code_name).toEqual(CODE_IDS.CREATE_POSITION);
   });

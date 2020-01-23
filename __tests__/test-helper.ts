@@ -1,5 +1,5 @@
+// tslint:disable:no-implicit-dependencies
 import { CanCommunityOptions } from '../src/types/can-community-types';
-// tslint:disable-next-line:no-implicit-dependencies
 import * as fetch from 'node-fetch';
 import { TextDecoder, TextEncoder } from 'util';
 import { SIGN_TRX_METHOD } from '../src/utils/constant';

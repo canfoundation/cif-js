@@ -41,7 +41,27 @@ async function findCode(code: EosName, community_account: EosName, code_id: CODE
   return res?.rows[0];
 }
 
+function randomNumberInRange(min: number, max: number): number {
+  return Math.floor(Math.random() * max) + min;
+}
+
+function randomEosName(length?: number): EosName {
+  if (!length) {
+    length = randomNumberInRange(8, 12);
+  }
+
+  const characters = '.12345abcdefghijklmnopqrstuvwxyz';
+  const charactersLength = characters.length;
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 export default {
   makeCanApi,
   findCode,
+  randomEosName,
+  randomNumberInRange,
 };

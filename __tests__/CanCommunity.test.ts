@@ -66,7 +66,7 @@ describe('test CanCommunity', () => {
       };
 
       let rs;
-      expect(() => rs = cif.signTrx(trx, signOption)).not.toThrow('missing `userId` in `signOption`');
+      expect(() => (rs = cif.signTrx(trx, signOption))).not.toThrow('missing `userId` in `signOption`');
       expect(spySignTrx).toBeCalledWith(trx, signOption);
       expect(spySignTx).not.toBeCalled();
       expect(rs).toEqual(trx);
@@ -80,11 +80,7 @@ describe('test CanCommunity', () => {
       const code_action: ActionNameEnum = ActionNameEnum.CREATEPOS;
       const packed_params: string = faker.lorem.words();
 
-      await cif.execCode(
-        code_id,
-        code_action,
-        packed_params,
-      );
+      await expect(cif.execCode(code_id, code_action, packed_params)).rejects.toThrow('missing `userId` in `signOption`');
       expect(signTrx).toBeCalled();
     });
   });

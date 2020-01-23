@@ -3,8 +3,6 @@ import { options } from '../test-helper';
 import { CODE_IDS } from '../../src/utils/constant';
 import app from '../../src/app';
 
-jest.mock('eosjs');
-
 describe('test some utility functions', () => {
   app.init(options.canUrl, options.fetch);
 
@@ -52,5 +50,24 @@ describe('test some utility functions', () => {
     });
     expect(code.code_id).toEqual(1);
     expect(code.code_name).toEqual(CODE_IDS.CREATE_POSITION);
+  });
+
+  it('should make a random number', async () => {
+    for (let i = 0; i < 1000; i++) {
+      const n = utils.randomNumberInRange(1, 12);
+      expect(n).toBeGreaterThanOrEqual(1);
+      expect(n).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('should make a random eos name', async () => {
+    const names = new Array(10000).fill('').map(() => {
+      const name = utils.randomEosName();
+      expect(name).toMatch(/[1-5.a-z]{1,12}/);
+      return name;
+    });
+
+    // check unique
+    expect(names.length).toEqual(new Set(names).size);
   });
 });
