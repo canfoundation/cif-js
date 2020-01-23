@@ -10,6 +10,14 @@
     "no-var-requires": false,
     "no-empty": false,
     "variable-name": false,
+    "ban": [
+      true,
+      "eval",
+      { "name": "fdescribe", "message": "don't focus test suite" },
+      { "name": ["describe", "only"], "message": "don't focus test suite" },
+      { "name": "fit", "message": "don't focus test case" },
+      { "name": ["it", "only"], "message": "don't focus test case" }
+    ],
     "no-duplicate-imports": true
   }
 }

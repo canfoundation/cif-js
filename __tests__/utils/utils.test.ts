@@ -54,16 +54,28 @@ describe('test some utility functions', () => {
 
   it('should make a random number', async () => {
     for (let i = 0; i < 1000; i++) {
-      const n = utils.randomNumberInRange(1, 12);
-      expect(n).toBeGreaterThanOrEqual(1);
+      const n = utils.randomNumberInRange(8, 12);
+      expect(n).toBeGreaterThanOrEqual(8);
       expect(n).toBeLessThanOrEqual(12);
+    }
+    for (let i = 0; i < 1000; i++) {
+      const n = utils.randomNumberInRange(8, 9);
+      expect(n).toBeGreaterThanOrEqual(8);
+      expect(n).toBeLessThanOrEqual(9);
+    }
+    for (let i = 0; i < 1000; i++) {
+      const n = utils.randomNumberInRange(5, 10);
+      expect(n).toBeGreaterThanOrEqual(5);
+      expect(n).toBeLessThanOrEqual(10);
     }
   });
 
   it('should make a random eos name', async () => {
     const names = new Array(10000).fill('').map(() => {
       const name = utils.randomEosName();
-      expect(name).toMatch(/[1-5.a-z]{1,12}/);
+      expect(name).toMatch(/^[1-5.a-z]+$/);
+      expect(name.length).toBeGreaterThanOrEqual(8);
+      expect(name.length).toBeLessThanOrEqual(12);
       return name;
     });
 

@@ -163,28 +163,10 @@ export class CanCommunity {
     return this.execCode(CODE_IDS.SET_COLLECTION_RULE_FOR_CODE, ActionNameEnum.SETCOLLECTRL, packedParams, execCodeInput);
   }
 
-  voteForCode(input: Voteforcode) {
-    return this.signTrx({
-      actions: [this.makeAction(ActionNameEnum.VOTEFORCODE, this.config.signOption.canAccount, input)],
-    });
-  }
-
   async setRightHolderForPosition(input: Setrightcode, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.SETRIGHTCODE, input);
 
     return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_POSITION, ActionNameEnum.SETRIGHTCODE, packedParams, execCodeInput);
-  }
-
-  voteForPosition(input: Voteforpos) {
-    return this.signTrx({
-      actions: [this.makeAction(ActionNameEnum.VOTEFORPOS, this.config.signOption.canAccount, input)],
-    });
-  }
-
-  nominatePosition(input: Nominatepos) {
-    return this.signTrx({
-      actions: [this.makeAction(ActionNameEnum.NOMINATEPOS, this.config.signOption.canAccount, input)],
-    });
   }
 
   async createPosition(input: Createpos, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -209,6 +191,24 @@ export class CanCommunity {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.APPOINTPOS, input);
 
     return this.execCode(CODE_IDS.APPOINT_POSITION, ActionNameEnum.APPOINTPOS, packedParams, execCodeInput);
+  }
+
+  voteForCode(input: Voteforcode) {
+    return this.signTrx({
+      actions: [this.makeAction(ActionNameEnum.VOTEFORCODE, this.config.signOption.canAccount, input)],
+    });
+  }
+
+  voteForPosition(input: Voteforpos) {
+    return this.signTrx({
+      actions: [this.makeAction(ActionNameEnum.VOTEFORPOS, this.config.signOption.canAccount, input)],
+    });
+  }
+
+  nominatePosition(input: Nominatepos) {
+    return this.signTrx({
+      actions: [this.makeAction(ActionNameEnum.NOMINATEPOS, this.config.signOption.canAccount, input)],
+    });
   }
 
   execProposal(input: Execproposal) {

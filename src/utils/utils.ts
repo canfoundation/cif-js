@@ -42,7 +42,7 @@ async function findCode(code: EosName, community_account: EosName, code_id: CODE
 }
 
 function randomNumberInRange(min: number, max: number): number {
-  return Math.floor(Math.random() * max) + min;
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function randomEosName(length?: number): EosName {
