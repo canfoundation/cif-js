@@ -20,14 +20,13 @@
     "lib"
   ],
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "types": "lib/index.d.ts",
   "scripts": {
     "clean": "rimraf lib && rimraf coverage",
     "format": "yarn prettier --write '{src,__tests__}/**/*.ts'",
     "lint": "tslint -p . --fix",
     "prebuild": "yarn clean",
-    "prepare": "npm run build",
-    "prepublish": "npm run build",
+    "prepublish": "yarn build",
     "build": "tsc --pretty",
     "test": "jest",
     "coverage": "jest --coverage",
