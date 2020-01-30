@@ -1,50 +1,5 @@
 <a name="common"></a>
 
-<!-- ## Required
-
-```js
-const fetch = require('node-fetch'); // node only
-const { TextDecoder, TextEncoder } = require('util'); // node only
-const config = {
-  canUrl: 'http://18.182.95.163:8888',
-  textEncoder: new TextEncoder(),
-  textDecoder: new TextEncoder(),
-  governanceAccount: 'governance23',
-  fetch,
-};
-```
-
-| Field **(config)**         | Description                 |
-| -------------------------- | --------------------------- |
-| canUrl (string)            |                             |
-| textEncoder                | new TextEncoder() from util |
-| textDecoder                | new TextEncoder() from util |
-| governanceAccount (string) |                             |
-| fetch                      | from 'node-fetch';          |
-
-## Objects
-
-<dl>
-<dt><a href="#canCommunity">canCommunity</a> : <code>object</code></dt>
-<dd></dd>
-</dl>
-
-- **Create `canCommunity`**
-
-| Field **(input)** | Description                           |
-| ----------------- | ------------------------------------- |
-| clientId (string) |                                       |
-| version (string)  | v1.0                                  |
-| config            |                                       |
-| store             | memory/localStore (default: 'memory') |
-
-**Example**
-
-```js
-const { CanCommunity } = require('cif-js');
-const canCommunity = new CanCommunity(clientId, version, config, store?);
-``` -->
-
 ## Below is a list of supported actions:
 
 - [canCommunity](#canCommunity.createCanCommunity)
@@ -70,28 +25,31 @@ const canCommunity = new CanCommunity(clientId, version, config, store?);
 ### Initial `canCommunity` (Required)
 
 **CanCommunityOptions**
-| Field **(input)** | Description |
-| --------------------------------------------------------- | ------------------------------------- |
-| canUrl (string) | |
-| signOption(SignTrxOption) | |
-| textEncoder | new TextEncoder() from `util` |
-| textDecoder | new TextEncoder() from `util` |
-| code (string) | governance smart contract CAN account |
-| fetch | from 'node-fetch'; |
+
+| Field **(input)**         | Description                           |
+| ------------------------- | ------------------------------------- |
+| canUrl (string)           |                                       |
+| signOption(SignTrxOption) |                                       |
+| textEncoder               | new TextEncoder() from `util`         |
+| textDecoder               | new TextEncoder() from `util`         |
+| code (string)             | governance smart contract CAN account |
+| fetch                     | from 'node-fetch';                    |
 
 **SignTrxOption**
-| Field **(input)** | Description |
+
+| Field **(input)**            | Description                   |
 | ---------------------------- | ----------------------------- |
-| userId (string) | |
-| signTrxMethod | `CAN_PASS` or `MANUAL` |
-| canAccount (string) | |
+| userId (string)              |                               |
+| signTrxMethod                | `CAN_PASS` or `MANUAL`        |
+| canAccount (string)          |                               |
 | communityCanAccount (string) | new TextEncoder() from `util` |
 
 **CanCommunity**
-| Field **(input)** | Description |
-| ---------------------------- | ----------------------------- |
-| config (CanCommunityOptions) | |
-| canPass | new CanPass() from `can-pass-js` npm package (this field is not required) |
+
+| Field **(input)**            | Description                                                               |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| config (CanCommunityOptions) |                                                                           |
+| canPass                      | new CanPass() from `can-pass-js` npm package (this field is not required) |
 
 **Example**
 
@@ -125,20 +83,22 @@ const canCommunity = new CanCommunity(config, canPass);
 ### Create a Community **[API doc](http://git.baikal.io/can/governance-designer#create-a-community)**
 
 **input**
-| Field **(input)** | Description |
+
+| Field **(input)**             | Description                                                                          |
 | ----------------------------- | ------------------------------------------------------------------------------------ |
-| creator (string) | Account registering to be a community creator who has permission to create community |
-| community_account (string) | CAN Account of Community on CAN chain (must follow this naming conventions) |
-| community_name (string) | Community Name |
-| member_badge (number[]) | Declare a Badge to identify Members of Community |
-| community_url (string) | URL Address of Community |
-| description (string) | Some description for the Community |
-| create_default_code (boolean) | To setup default codes to be used for the Community |
+| creator (string)              | Account registering to be a community creator who has permission to create community |
+| community_account (string)    | CAN Account of Community on CAN chain (must follow this naming conventions)          |
+| community_name (string)       | Community Name                                                                       |
+| member_badge (number[])       | Declare a Badge to identify Members of Community                                     |
+| community_url (string)        | URL Address of Community                                                             |
+| description (string)          | Some description for the Community                                                   |
+| create_default_code (boolean) | To setup default codes to be used for the Community                                  |
 
 **initialCAT**
-| Field **(input)** | Description |
-| -------------------------- | -------------------------------------------------- |
-| initialCAT (string) | CAT token |
+
+| Field **(input)**   | Description |
+| ------------------- | ----------- |
+| initialCAT (string) | CAT token   |
 
 **Example**
 
@@ -203,21 +163,22 @@ const result = canCommunity.execCode(code_id, code_action, packed_params, execCo
 #### Create a code **[API doc](http://git.baikal.io/can/governance-designer#create-a-code)**
 
 **input**
-| Field **(input)** | Description |
-| -------------------------- | -------------------------------------------------- |
-| community_account (string) | CAN Account of the Community |
-| code_name (string) | Name of the Code to be configured |
-| contract_name (string) | The smart contract which run the code |
-| code_actions (string[]) | The code's action |
-| code_exec_type (number) | 0: SOLE_DECISION, 1: COLLECTIVE_DECISION, 2 : BOTH |
-| amendment_exec_type (number) | |
-| amendment_right_accounts (number) | |
-| amendment_pos_ids_right_holder (number) | |
-| amendment_vote_duration (number) | |
-| amendment_execution_duration (number) | |
-| amendment_pass_rule (number) | |
-| amendment_vote_right_accounts (number) | |
-| amendment_vote_pos_ids (number) | |
+
+| Field **(input)**                       | Description                                        |
+| --------------------------------------- | -------------------------------------------------- |
+| community_account (string)              | CAN Account of the Community                       |
+| code_name (string)                      | Name of the Code to be configured                  |
+| contract_name (string)                  | The smart contract which run the code              |
+| code_actions (string[])                 | The code's action                                  |
+| code_exec_type (number)                 | 0: SOLE_DECISION, 1: COLLECTIVE_DECISION, 2 : BOTH |
+| amendment_exec_type (number)            |                                                    |
+| amendment_right_accounts (number)       |                                                    |
+| amendment_pos_ids_right_holder (number) |                                                    |
+| amendment_vote_duration (number)        |                                                    |
+| amendment_execution_duration (number)   |                                                    |
+| amendment_pass_rule (number)            |                                                    |
+| amendment_vote_right_accounts (number)  |                                                    |
+| amendment_vote_pos_ids (number)         |                                                    |
 
 ```js
 const input = {
