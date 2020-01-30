@@ -1,6 +1,6 @@
 {
   "name": "cif-js",
-  "version": "0.9.4",
+  "version": "0.9.10",
   "description": "cif-js",
   "license": "MIT",
   "repository": {
@@ -25,13 +25,14 @@
     "clean": "rimraf lib && rimraf coverage",
     "format": "yarn prettier --write '{src,__tests__}/**/*.ts'",
     "lint": "tslint -p . --fix",
-    "prebuild": "yarn clean",
+    "prebuild": "yarn clean && yarn make-types",
     "prepublish": "yarn build",
     "build": "tsc --pretty",
     "test": "jest",
     "coverage": "jest --coverage",
     "watch": "yarn build -- --watch",
-    "watch:test": "jest --watch"
+    "watch:test": "jest --watch",
+    "make-types": "yarn ts-node ./scripts/index.ts"
   },
   "lint-staged": {
     "**/*.ts": [
@@ -46,22 +47,26 @@
     }
   },
   "dependencies": {
-    "can-pass-js": "^0.9.8",
     "eosjs": "^20.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.3",
+    "@types/faker": "^4.1.9",
+    "@types/jest": "^24.9.0",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^10.11.4",
     "@types/node-fetch": "^2.5.4",
     "coveralls": "^3.0.2",
     "dotenv-extended": "^2.5.0",
+    "faker": "^4.1.0",
     "husky": "^3.1.0",
     "jest": "^23.6.0",
     "lint-staged": "^9.5.0",
+    "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
     "prettier": "^1.14.3",
     "pretty-quick": "^2.0.1",
     "rimraf": "^2.6.2",
+    "shelljs": "^0.8.3",
     "ts-jest": "^23.10.3",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",

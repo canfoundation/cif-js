@@ -1,27 +1,11 @@
-export enum DEFAULT_NUMBER {
-  CAT = '10.0000 CAT',
-}
-export enum EOS_ACCOUNT {
-  NAME = 'eosio.token',
+export enum SIGN_TRX_METHOD {
+  CAN_PASS = 'CAN_PASS',
+  MANUAL = 'MANUAL',
 }
 
-export enum ACTIONS_NAME {
-  CREATE_COMMUNITY_ACCOUNT = 'transfer',
-  CREATE_COMMUNITY = 'create',
-  CREATE_CODE = 'createcode',
-  EXECUTE_CODE = 'execcode',
-  SET_RIGHT_HOLDER_FOR_CODE = 'setrightcode',
-  SET_COLLECTION_RULE_FOR_CODE = 'setcollectrl',
-  VOTE_FOR_CODE = 'voteforcode',
-  SET_RIGHT_HOLDER_FOR_POSITION = 'setrightpos',
-  VOTE_FOR_POSITION = 'voteforpos',
-  SET_FILLING_RULE_FOR_POSITION = 'setfillrule',
-  NOMINATE_POSITION = 'nominatepos',
-  CREATE_POSITION = 'createpos',
-  DISMISS_POSITION = 'dissmisspos',
-  APPROVE_POSITION = 'approvepos',
-  APPOINT_POSITION = 'appointpos',
-  EXEC_PROPOSAL = 'execproposal',
+export enum EXECUTION_TYPE {
+  SOLE_DECISION = 0,
+  COLLECTIVE_DECISION,
 }
 
 export enum CODE_IDS {
@@ -36,6 +20,9 @@ export enum CODE_IDS {
   SET_FILLING_RULE_FOR_POSITION = 'po.config',
 }
 
+/**
+ * @deprecated will be remove on version > 0.9.10
+ */
 export enum TABLE {
   COMMUNITY = 'community',
   CODES = 'codes',
