@@ -120,7 +120,7 @@ const result = canCommunity.createCommunity(input, initialCAT);
 
 <a name="canCommunity.execCodeInput"></a>
 
-#### execCodeInput (option)
+### execCodeInput (option)
 
 | Field **(input)**      | Description   |
 | ---------------------- | ------------- |
@@ -138,7 +138,7 @@ const execCodeInput = {
 
 <a name="canCommunity.execCode"></a>
 
-#### Execute a Code
+### Execute a Code
 
 | Field **(input)**             | Description                                    |
 | ----------------------------- | ---------------------------------------------- |
@@ -160,7 +160,7 @@ const result = canCommunity.execCode(code_id, code_action, packed_params, execCo
 
 <a name="canCommunity.createCode"></a>
 
-#### Create a code **[API doc](http://git.baikal.io/can/governance-designer#create-a-code)**
+### Create a code **[API doc](http://git.baikal.io/can/governance-designer#create-a-code)**
 
 **input**
 
@@ -196,7 +196,7 @@ const result = canCommunity.createCode(input, execCodeInput);
 
 <a name="canCommunity.setRightHolderForCode"></a>
 
-#### Set Right Holders for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-right-holders-for-a-code)**
+### Set Right Holders for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-right-holders-for-a-code)**
 
 | Field **(input)**          | Description                            |
 | -------------------------- | -------------------------------------- |
@@ -221,7 +221,7 @@ const result = canCommunity.setRightHolderForCode(input, execCodeInput);
 
 <a name="canCommunity.setCollectionRuleForCode"></a>
 
-#### Set Collective Rules for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-collective-rules-for-a-code)**
+### Set Collective Rules for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-collective-rules-for-a-code)**
 
 | Field **(input)**           | Description                                  |
 | --------------------------- | -------------------------------------------- |
@@ -252,7 +252,7 @@ const result = canCommunity.setCollectionRuleForCode(input, execCodeInput);
 
 <a name="canCommunity.voteForCode"></a>
 
-#### Vote for a Code **[API doc](http://git.baikal.io/can/governance-designer#vote-for-a-code)**
+### Vote for a Code **[API doc](http://git.baikal.io/can/governance-designer#vote-for-a-code)**
 
 | Field **(input)**          | Description                  |
 | -------------------------- | ---------------------------- |
@@ -277,7 +277,7 @@ const result = canCommunity.voteForCode(input, execCodeInput);
 
 <a name="canCommunity.createPosition"></a>
 
-#### Create a Position **[API doc](http://git.baikal.io/can/governance-designer#create-a-position)**
+### Create a Position **[API doc](http://git.baikal.io/can/governance-designer#create-a-position)**
 
 | Field **(input)**          | Description                        |
 | -------------------------- | ---------------------------------- |
@@ -304,7 +304,7 @@ const result = canCommunity.createPosition(input, execCodeInput);
 
 <a name="canCommunity.dismissPosition"></a>
 
-#### Dismiss a Position **[API doc](http://git.baikal.io/can/governance-designer#dismiss-someone-from-a-position)**
+### Dismiss a Position **[API doc](http://git.baikal.io/can/governance-designer#dismiss-someone-from-a-position)**
 
 | Field **(input)**          | Description                  |
 | -------------------------- | ---------------------------- |
@@ -329,7 +329,7 @@ const result = canCommunity.dismissPosition(input, execCodeInput);
 
 <a name="canCommunity.setFillingRuleForPosition"></a>
 
-#### Set Filling Rule for a Position **[API doc](http://git.baikal.io/can/governance-designer#set-filling-rule-for-a-position)**
+### Set Filling Rule for a Position **[API doc](http://git.baikal.io/can/governance-designer#set-filling-rule-for-a-position)**
 
 | Field **(input)**                        | Description                             |
 | ---------------------------------------- | --------------------------------------- |
@@ -362,7 +362,7 @@ const result = canCommunity.setFillingRuleForPosition(input, execCodeInput);
 
 <a name="canCommunity.setRightHolderForPosition"></a>
 
-#### Set Candidate Rights for a Position
+### Set Candidate Rights for a Position
 
 | Field **(input)**          | Description                         |
 | -------------------------- | ----------------------------------- |
@@ -387,7 +387,7 @@ const result = canCommunity.setRightHolderForPosition(input, execCodeInput);
 
 <a name="canCommunity.nominatePosition"></a>
 
-#### Nominate for a Position **[API doc](http://git.baikal.io/can/governance-designer#nominate-for-a-position)**
+### Nominate for a Position **[API doc](http://git.baikal.io/can/governance-designer#nominate-for-a-position)**
 
 | Field **(input)**          | Description                  |
 | -------------------------- | ---------------------------- |
@@ -410,7 +410,7 @@ const result = canCommunity.nominatePosition(input, execCodeInput);
 
 <a name="canCommunity.approvePosition"></a>
 
-#### Approve a Position
+### Approve a Position
 
 | Field **(input)**          | Description                  |
 | -------------------------- | ---------------------------- |
@@ -431,7 +431,7 @@ const result = canCommunity.approvePosition(input, execCodeInput);
 
 <a name="canCommunity.voteForPosition"></a>
 
-#### Vote for a Position **[API doc](http://git.baikal.io/can/governance-designer#vote-for-a-position)**
+### Vote for a Position **[API doc](http://git.baikal.io/can/governance-designer#vote-for-a-position)**
 
 | Field **(input)**          | Description                               |
 | -------------------------- | ----------------------------------------- |
@@ -458,7 +458,7 @@ const result = canCommunity.voteForPosition(input, execCodeInput);
 
 <a name="canCommunity.appointPosition"></a>
 
-#### Appoint Someone to a Position **[API doc](http://git.baikal.io/can/governance-designer#appoint-someone-to-a-position)**
+### Appoint Someone to a Position **[API doc](http://git.baikal.io/can/governance-designer#appoint-someone-to-a-position)**
 
 | Field **(input)**          | Description                                            |
 | -------------------------- | ------------------------------------------------------ |
