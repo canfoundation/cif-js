@@ -35,3 +35,18 @@ export interface ExecCodeInput {
    */
   proposal_name?: EosName;
 }
+
+export interface QueryOptions {
+  json?: boolean;
+  code?: EosName;
+  scope?: EosName;
+  table?: string;
+  table_key?: string;
+  lower_bound?: number | string;
+  upper_bound?: number | string;
+  index_position?: number;
+  key_type?: string;
+  limit?: number;
+  reverse?: boolean;
+  show_payer?: boolean;
+}

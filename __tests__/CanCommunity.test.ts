@@ -9,6 +9,9 @@ import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from '../src/utils/constant
 import utils from '../src/utils/utils';
 import { Create } from '../src/smart-contract-types/Create';
 import * as actions from '../src/utils/actions';
+import { TableNameEnum } from '../src/smart-contract-types/TableNameEnum';
+import app from '../src/app';
+import tableCodes from './table-codes.json';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
@@ -505,6 +508,84 @@ describe('test CanCommunity', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('test query api', () => {
+    it('should no default params', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+      const table = TableNameEnum.CODES;
+
+      const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
+      get_table_rows.mockResolvedValue(tableCodes);
+
+      const res = await cif.query(table);
+      expect(get_table_rows).toBeCalledWith({
+        code: _options.code,
+        scope: _options.signOption.communityCanAccount,
+        table,
+      });
+      expect(res).toEqual(tableCodes);
+    });
+
+    it('should no default params', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+      const table = TableNameEnum.CODES;
+
+      const fakeRes = {
+        more: false,
+        rows: [
+          {
+            amendment_exec_type: 0,
+            amendment_execution_right: {
+              accounts: ['creator.can'],
+              required_badges: [],
+              required_exp: 0,
+              required_positions: [],
+              required_tokens: [],
+            },
+            code_actions: ['createcode'],
+            code_exec_type: 0,
+            code_execution_right: {
+              accounts: ['creator.can'],
+              required_badges: [],
+              required_exp: 0,
+              required_positions: [],
+              required_tokens: [],
+            },
+            code_id: 0,
+            code_name: 'co.amend',
+            code_type: { refer_id: 0, type: 0 },
+            contract_name: 'governance23',
+          },
+        ],
+      };
+
+      const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
+      get_table_rows.mockResolvedValue(fakeRes);
+
+      const res = await cif.query(table, {
+        key_type: 'i64',
+        index_position: 2,
+        lower_bound: CODE_IDS.CREATE_CODE,
+        upper_bound: CODE_IDS.CREATE_CODE,
+      });
+      expect(get_table_rows).toBeCalledWith({
+        code: _options.code,
+        scope: _options.signOption.communityCanAccount,
+        table,
+        key_type: 'i64',
+        index_position: 2,
+        lower_bound: CODE_IDS.CREATE_CODE,
+        upper_bound: CODE_IDS.CREATE_CODE,
+      });
+      expect(res).toEqual(fakeRes);
     });
   });
 });

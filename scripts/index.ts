@@ -29,6 +29,10 @@ const actionNameEnum = _.template(fs.readFileSync(path.resolve(__dirname, './Act
   ...templateSettings,
 });
 
+const tableNameEnum = _.template(fs.readFileSync(path.resolve(__dirname, './TableNameEnum.hbs')).toString(), {
+  ...templateSettings,
+});
+
 function loadAbi() {
   return rpc.get_abi(process.env.app__can_governance_account);
 }
@@ -72,6 +76,20 @@ function printOutActions(actions) {
   );
 }
 
+function printOutTables(tables) {
+  const enumFields = [];
+  for (const { name } of tables) {
+    enumFields.push(`${_.upperCase(name)} = '${name}'`);
+  }
+
+  fs.writeFileSync(
+    path.resolve(__dirname, `../src/smart-contract-types/TableNameEnum.ts`),
+    tableNameEnum({
+      enumFields: enumFields.join(', \n'),
+    }),
+  );
+}
+
 async function run() {
   Object.keys(process.env)
     .filter(k => /^app__.*/.test(k))
@@ -82,6 +100,7 @@ async function run() {
   const { abi } = await loadAbi();
   await printOutStructs(abi.structs);
   await printOutActions(abi.actions);
+  await printOutTables(abi.tables);
 
   shell.exec('yarn lint src/smart-contract-types/*.ts');
   shell.exec('yarn prettier --write src/smart-contract-types/*.ts');
