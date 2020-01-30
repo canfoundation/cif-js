@@ -20,6 +20,9 @@ export enum CODE_IDS {
   SET_FILLING_RULE_FOR_POSITION = 'po.config',
 }
 
+/**
+ * @deprecated will be remove on version > 0.9.10
+ */
 export enum TABLE {
   COMMUNITY = 'community',
   CODES = 'codes',

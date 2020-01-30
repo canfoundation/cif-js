@@ -1,10 +1,11 @@
-import { CODE_IDS, TABLE } from './constant';
+import { CODE_IDS } from './constant';
 import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 import { Api as EOSAPI } from 'eosjs';
 import { CanCommunityOptions } from '../types/can-community-types';
 import { logger } from './logger';
 import app from '../app';
 import { EosName } from '../smart-contract-types/base-types';
+import { TableNameEnum } from '../smart-contract-types/TableNameEnum';
 
 function makeCanApi(options: CanCommunityOptions) {
   const { textEncoder, textDecoder } = options;
@@ -29,7 +30,7 @@ async function findCode(code: EosName, community_account: EosName, code_id: CODE
   const res = await app.rpc.get_table_rows({
     code,
     scope: community_account,
-    table: TABLE.CODES,
+    table: TableNameEnum.CODES,
     lower_bound: code_id,
     upper_bound: code_id,
     index_position: 2,

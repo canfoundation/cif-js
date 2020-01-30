@@ -1,4 +1,4 @@
-import { CanCommunityOptions, ExecCodeInput, SignTrxOption } from './types/can-community-types';
+import { CanCommunityOptions, ExecCodeInput, QueryOptions, SignTrxOption } from './types/can-community-types';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, TABLE } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
@@ -20,6 +20,7 @@ import { Approvepos } from './smart-contract-types/Approvepos';
 import { Appointpos } from './smart-contract-types/Appointpos';
 import { Execproposal } from './smart-contract-types/Execproposal';
 import app from './app';
+import { TableNameEnum } from './smart-contract-types/TableNameEnum';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -217,6 +218,20 @@ export class CanCommunity {
     });
   }
 
+  async query(table: TableNameEnum, queryOptions?: QueryOptions) {
+    const queryInput: QueryOptions = {
+      code: this.config.code,
+      table,
+      scope: this.config.signOption.communityCanAccount,
+      ...queryOptions,
+    };
+
+    return app.rpc.get_table_rows(queryInput);
+  }
+
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getTableRows(
     code: string,
     scope: string,
@@ -241,45 +256,75 @@ export class CanCommunity {
     return results.rows;
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllCommunities(size: number, lowerBound: string = null) {
     return this.getTableRows(this.config.code, this.config.code, TABLE.COMMUNITY, size, lowerBound);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllCodeOfCommunity(communityAccount: string, size: number) {
     return this.getTableRows(this.config.code, communityAccount, TABLE.CODES, size);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getCollectiveRuleOfCode(communityAccount: string, codeId: string) {
     const results = await this.getTableRows(this.config.code, communityAccount, TABLE.COLLEC_RULES, 1, codeId);
     return results[0];
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllCodeProposalOfCommunity(communityAccount: string, size: number) {
     return this.getTableRows(this.config.code, communityAccount, TABLE.CO_PROPOSALS, size);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllPositionOfCommunity(communityAccount: string, size: number) {
     return this.getTableRows(this.config.code, communityAccount, TABLE.POSITIONS, size);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getPosition(communityAccount: string, positionId: string) {
     return this.getTableRows(this.config.code, communityAccount, TABLE.POSITIONS, 1, positionId);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getFillingRuleOfPosition(communityAccount: string, positionId: string) {
     const results = await this.getTableRows(this.config.code, communityAccount, TABLE.FILLING_RULE, 1, positionId);
     return results[0];
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllPositionProposalOfCommunity(communityAccount: string, size: number) {
     return this.getTableRows(this.config.code, communityAccount, TABLE.POS_PROPOSAL, size);
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getProposalOfPosition(communityAccount: string, positionId: string) {
     const results = await this.getTableRows(this.config.code, communityAccount, TABLE.POS_PROPOSAL, 1, positionId);
     return results[0];
   }
 
+  /**
+   * @deprecated will be remove on version > 0.9.10
+   */
   async getAllCandidateOfPosition(communityAccount: string, positionId: string, size: number) {
     const positionProposal = await this.getProposalOfPosition(communityAccount, positionId);
     return this.getTableRows(this.config.code, positionProposal.pos_proposal_id, TABLE.POS_CANDIDATE, size, positionId);
