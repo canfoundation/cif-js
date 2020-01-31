@@ -29,6 +29,7 @@
 | Field **(input)**         | Description                           |
 | ------------------------- | ------------------------------------- |
 | canUrl (string)           |                                       |
+| userName (string)         |                                       |
 | signOption(SignTrxOption) |                                       |
 | textEncoder               | new TextEncoder() from `util`         |
 | textDecoder               | new TextEncoder() from `util`         |

@@ -60,7 +60,7 @@ describe('test CanCommunity', () => {
       };
       expect(() => cif.signTrx(trx, signOption)).not.toThrow('missing `userId` in `signOption`');
       expect(spySignTrx).toBeCalledWith(trx, signOption);
-      expect(spySignTx).toBeCalledWith(trx, signOption.userId);
+      expect(spySignTx).toBeCalledWith(trx, signOption.userId, options.userName);
     });
 
     it('has signOption with MANUAL as method', async () => {
