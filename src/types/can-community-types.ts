@@ -10,6 +10,7 @@ export interface CanCommunityOptions {
    * this is governance smart contract CAN account
    */
   code: EosName;
+  userName: string;
   fetch?: (input?: string | Request, init?: RequestInit) => Promise<Response>;
 }
 

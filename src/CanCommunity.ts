@@ -56,7 +56,7 @@ export class CanCommunity {
           logger.error('missing `userId` in `signOption`', signOption);
           throw new Error('missing `userId` in `signOption`');
         }
-        return this.canPass.signTx(trx, signOption.userId);
+        return this.canPass.signTx(trx, signOption.userId, this.config.userName);
     }
   }
 
