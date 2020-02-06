@@ -21,13 +21,16 @@ import { Appointpos } from './smart-contract-types/Appointpos';
 import { Execproposal } from './smart-contract-types/Execproposal';
 import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
+import { JsonRpc } from 'eosjs/dist';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
+  public rpc: JsonRpc;
 
   constructor(config: CanCommunityOptions, public canPass?: any) {
     app.init(config.canUrl, config.fetch);
     this.config = config;
+    this.rpc = app.rpc;
   }
 
   makeAction(action: string, actor: EosName, input: any) {
@@ -226,7 +229,7 @@ export class CanCommunity {
       ...queryOptions,
     };
 
-    return app.rpc.get_table_rows(queryInput);
+    return this.rpc.get_table_rows(queryInput);
   }
 
   /**
@@ -252,7 +255,7 @@ export class CanCommunity {
       limit,
     };
 
-    results = await app.rpc.get_table_rows(parameters);
+    results = await this.rpc.get_table_rows(parameters);
     return results.rows;
   }
 
