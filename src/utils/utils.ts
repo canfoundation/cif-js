@@ -6,6 +6,7 @@ import { logger } from './logger';
 import app from '../app';
 import { EosName } from '../smart-contract-types/base-types';
 import { TableNameEnum } from '../smart-contract-types/TableNameEnum';
+import { CodeTypeEnum } from '../types/smart-contract-enum';
 
 function makeCanApi(options: CanCommunityOptions) {
   const { textEncoder, textDecoder } = options;
@@ -25,21 +26,47 @@ function makeCanApi(options: CanCommunityOptions) {
  * @param code
  * @param community_account
  * @param code_id
+ * @param code_type
+ * @param referenceId
  */
-async function findCode(code: EosName, community_account: EosName, code_id: CODE_IDS): Promise<any> {
-  const res = await app.rpc.get_table_rows({
-    code,
-    scope: community_account,
-    table: TableNameEnum.CODES,
-    lower_bound: code_id,
-    upper_bound: code_id,
-    index_position: 2,
-    key_type: 'i64',
-  });
+async function findCode(
+  code: EosName,
+  community_account: EosName,
+  code_id: CODE_IDS,
+  code_type: CodeTypeEnum,
+  referenceId?: number,
+): Promise<any> {
+  let res;
+  if (code_type === CodeTypeEnum.NORMAL || code_type === CodeTypeEnum.AMENDMENT) {
+    const codeTable = await app.rpc.get_table_rows({
+      code,
+      scope: community_account,
+      table: TableNameEnum.CODES,
+      lower_bound: code_id,
+      upper_bound: code_id,
+      index_position: 2,
+      key_type: 'i64',
+    });
+    res = codeTable?.rows[0];
+  } else if (code_type === CodeTypeEnum.POSITION) {
+    const codeTable = await app.rpc.get_table_rows({
+      code,
+      scope: community_account,
+      table: TableNameEnum.CODES,
+      lower_bound: referenceId,
+      upper_bound: referenceId,
+      index_position: 3,
+      key_type: 'i64',
+    });
+    const positionCodes = codeTable?.rows;
+    if (positionCodes.length) {
+      res = positionCodes.find(c => c.code_name === code_id);
+    }
+  }
 
   logger.debug('---- getCodeId - get_table_rows', JSON.stringify(res));
 
-  return res?.rows[0];
+  return res;
 }
 
 function randomNumberInRange(min: number, max: number): number {

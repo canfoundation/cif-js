@@ -2,11 +2,12 @@ import utils from '../../src/utils/utils';
 import { options } from '../test-helper';
 import { CODE_IDS } from '../../src/utils/constant';
 import app from '../../src/app';
+import { CodeTypeEnum } from '../../src/types/smart-contract-enum';
 
 describe('test some utility functions', () => {
   app.init(options.canUrl, options.fetch);
 
-  it('should get code id', async () => {
+  it('should get normal code id', async () => {
     const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
     get_table_rows.mockResolvedValue({
       // @ts-ignore
@@ -16,20 +17,6 @@ describe('test some utility functions', () => {
           code_name: 'po.create',
           contract_name: 'governance23',
           code_actions: ['createpos'],
-          code_execution_right: {
-            required_badges: [],
-            required_positions: [],
-            required_tokens: [],
-            required_exp: 0,
-            accounts: ['creator.can'],
-          },
-          amendment_execution_right: {
-            required_badges: [],
-            required_positions: [],
-            required_tokens: [],
-            required_exp: 0,
-            accounts: ['creator.can'],
-          },
           code_exec_type: 1,
           amendment_exec_type: 0,
           code_type: { type: 0, refer_id: 0 },
@@ -38,18 +25,61 @@ describe('test some utility functions', () => {
       more: false,
     });
 
-    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CREATE_POSITION);
+    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CREATE_POSITION, CodeTypeEnum.NORMAL);
     expect(get_table_rows).toBeCalledWith({
-      code: 'governance23',
-      index_position: 2,
-      key_type: 'i64',
-      lower_bound: 'po.create',
+      code: 'governance24',
       scope: 'community242',
       table: 'codes',
+      lower_bound: 'po.create',
       upper_bound: 'po.create',
+      index_position: 2,
+      key_type: 'i64',
     });
+    expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(1);
     expect(code.code_name).toEqual(CODE_IDS.CREATE_POSITION);
+  });
+
+  it('should get position code id', async () => {
+    const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
+    get_table_rows.mockResolvedValue({
+      // @ts-ignore
+      rows: [
+        {
+          code_id: 11,
+          code_name: 'po.config',
+          contract_name: 'governance24',
+          code_actions: ['configpos'],
+          code_exec_type: 1,
+          amendment_exec_type: 0,
+          code_type: { type: 1, refer_id: 99 },
+        },
+        {
+          code_id: 12,
+          code_name: 'po.appoint',
+          contract_name: 'governance24',
+          code_actions: ['appointpos'],
+          code_exec_type: 1,
+          amendment_exec_type: 0,
+          code_type: { type: 1, refer_id: 99 },
+        },
+      ],
+      more: false,
+    });
+
+    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CONFIGURE_POSITION, CodeTypeEnum.POSITION, 99);
+    expect(get_table_rows).toBeCalledWith({
+      code: 'governance24',
+      scope: 'community242',
+      table: 'codes',
+      lower_bound: 99,
+      upper_bound: 99,
+      index_position: 3,
+      key_type: 'i64',
+    });
+    expect(get_table_rows).toBeCalledTimes(1);
+    expect(code.code_id).toEqual(11);
+    expect(code.code_name).toEqual(CODE_IDS.CONFIGURE_POSITION);
   });
 
   it('should make a random number', async () => {
