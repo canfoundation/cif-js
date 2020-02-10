@@ -84,7 +84,7 @@ export class CanCommunity {
 
     let trx;
 
-    switch (code.code_exec_type) {
+    switch (code.exec_type) {
       case EXECUTION_TYPE.SOLE_DECISION:
         const execCode: Execcode = {
           community_account,
