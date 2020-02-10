@@ -89,13 +89,13 @@ describe('test CanCommunity', () => {
 
       const spyFindCode = jest.spyOn(utils, 'findCode');
       spyFindCode.mockResolvedValue({
-        code_exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
+        exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
         code_id: faker.random.number(),
       });
 
       await expect(cif.execCode(code_id, code_action, packed_params)).rejects.toThrow('missing `userId` in `signOption`');
       spyFindCode.mockResolvedValue({
-        code_exec_type: EXECUTION_TYPE.SOLE_DECISION,
+        exec_type: EXECUTION_TYPE.SOLE_DECISION,
         code_id: faker.random.number(),
       });
 
@@ -114,7 +114,7 @@ describe('test CanCommunity', () => {
         const packed_params: string = faker.lorem.words();
 
         const setupCode = {
-          code_exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
+          exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
           code_id: faker.random.number(),
         };
         const spyFindCode = jest.spyOn(utils, 'findCode');
@@ -156,7 +156,7 @@ describe('test CanCommunity', () => {
         const packed_params: string = faker.lorem.words();
 
         const setupCode = {
-          code_exec_type: EXECUTION_TYPE.SOLE_DECISION,
+          exec_type: EXECUTION_TYPE.SOLE_DECISION,
           code_id: faker.random.number(),
         };
         const spyFindCode = jest.spyOn(utils, 'findCode');
@@ -551,7 +551,7 @@ describe('test CanCommunity', () => {
               required_tokens: [],
             },
             code_actions: ['createcode'],
-            code_exec_type: 0,
+            exec_type: 0,
             code_execution_right: {
               accounts: ['creator.can'],
               required_badges: [],
