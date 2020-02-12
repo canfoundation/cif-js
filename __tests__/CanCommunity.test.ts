@@ -12,6 +12,19 @@ import * as actions from '../src/utils/actions';
 import { TableNameEnum } from '../src/smart-contract-types/TableNameEnum';
 import app from '../src/app';
 import tableCodes from './table-codes.json';
+import { CodeTypeEnum } from '../src/types/smart-contract-enum';
+import { ExecutionCodeData } from '../src/smart-contract-types/ExecutionCodeData';
+import { ConfigCodeInput } from '../src/types/right-holder-type';
+import { Setexectype } from '../src/smart-contract-types/Setexectype';
+import { Setsoleexec } from '../src/smart-contract-types/Setsoleexec';
+import { Setapprotype } from '../src/smart-contract-types/Setapprotype';
+import { Setproposer } from '../src/smart-contract-types/Setproposer';
+import { Setvoter } from '../src/smart-contract-types/Setvoter';
+import { Setvoterule } from '../src/smart-contract-types/Setvoterule';
+import { Configpos } from '../src/smart-contract-types/Configpos';
+import { Dismisspos } from '../src/smart-contract-types/Dismisspos';
+import { Approvepos } from '../src/smart-contract-types/Approvepos';
+import { Appointpos } from '../src/smart-contract-types/Appointpos';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
@@ -93,13 +106,20 @@ describe('test CanCommunity', () => {
         code_id: faker.random.number(),
       });
 
-      await expect(cif.execCode(code_id, code_action, packed_params)).rejects.toThrow('missing `userId` in `signOption`');
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action,
+          packed_params,
+        },
+      ];
+
+      await expect(cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL)).rejects.toThrow('missing `userId` in `signOption`');
       spyFindCode.mockResolvedValue({
         exec_type: EXECUTION_TYPE.SOLE_DECISION,
         code_id: faker.random.number(),
       });
 
-      await expect(cif.execCode(code_id, code_action, packed_params)).rejects.toThrow('missing `userId` in `signOption`');
+      await expect(cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL)).rejects.toThrow('missing `userId` in `signOption`');
     });
 
     describe('no default param, but has userId', () => {
@@ -114,13 +134,20 @@ describe('test CanCommunity', () => {
         const packed_params: string = faker.lorem.words();
 
         const setupCode = {
-          exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
+          code_exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
           code_id: faker.random.number(),
         };
         const spyFindCode = jest.spyOn(utils, 'findCode');
         spyFindCode.mockResolvedValue(setupCode);
 
-        await cif.execCode(code_id, code_action, packed_params);
+        const codeActions: ExecutionCodeData[] = [
+          {
+            code_action,
+            packed_params,
+          },
+        ];
+
+        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL);
         expect(signTrx).toBeCalledWith({
           actions: [
             {
@@ -132,10 +159,9 @@ describe('test CanCommunity', () => {
                 },
               ],
               data: {
-                code_action: ActionNameEnum.CREATEPOS,
                 code_id: setupCode.code_id,
                 community_account: _options.signOption.communityCanAccount,
-                data: packed_params,
+                code_actions: codeActions,
                 proposal_name: expect.stringMatching(/[1-5.a-z]{1,12}/),
                 proposer: _options.signOption.canAccount,
               },
@@ -156,13 +182,20 @@ describe('test CanCommunity', () => {
         const packed_params: string = faker.lorem.words();
 
         const setupCode = {
-          exec_type: EXECUTION_TYPE.SOLE_DECISION,
+          code_exec_type: EXECUTION_TYPE.SOLE_DECISION,
           code_id: faker.random.number(),
         };
         const spyFindCode = jest.spyOn(utils, 'findCode');
         spyFindCode.mockResolvedValue(setupCode);
 
-        await cif.execCode(code_id, code_action, packed_params);
+        const codeActions: ExecutionCodeData[] = [
+          {
+            code_action,
+            packed_params,
+          },
+        ];
+
+        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL);
 
         expect(signTrx).toBeCalledWith({
           actions: [
@@ -175,11 +208,10 @@ describe('test CanCommunity', () => {
                 },
               ],
               data: {
-                code_action: ActionNameEnum.CREATEPOS,
                 code_id: setupCode.code_id,
                 community_account: _options.signOption.communityCanAccount,
                 exec_account: _options.signOption.canAccount,
-                packed_params,
+                code_actions: codeActions,
               },
               name: ActionNameEnum.EXECCODE,
             },
@@ -246,23 +278,50 @@ describe('test CanCommunity', () => {
       const execCode = jest.spyOn(cif, 'execCode');
       execCode.mockResolvedValue({});
 
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.CREATECODE,
+          packed_params: packedParams,
+        },
+      ];
+
       const serializeActionData = jest.spyOn(actions, 'serializeActionData');
       serializeActionData.mockResolvedValue(packedParams);
 
       // @ts-ignore
       await cif.createCode(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CREATECODE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.CREATE_CODE, ActionNameEnum.CREATECODE, packedParams, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.CREATE_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
     });
 
-    it('should setRightHolderForCode', async () => {
+    it('should set code execution type using configCode', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: ConfigCodeInput = {
+        community_account: 'test-community',
+        code_id: 99,
+        code_right_holder: {
+          exec_type: 1,
+        },
+      };
       const packedParams = faker.lorem.words();
+
+      const setExecTypeInput: Setexectype = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        exec_type: input.code_right_holder.exec_type,
+        is_amend_code: false,
+      };
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETEXECTYPE,
+          packed_params: packedParams,
+        },
+      ];
 
       const execCode = jest.spyOn(cif, 'execCode');
       execCode.mockResolvedValue({});
@@ -271,19 +330,52 @@ describe('test CanCommunity', () => {
       serializeActionData.mockResolvedValue(packedParams);
 
       // @ts-ignore
-      await cif.setRightHolderForCode(input);
-      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETRIGHTCODE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, ActionNameEnum.SETRIGHTCODE, packedParams, undefined);
+      await cif.configCode(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
+      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
     });
 
-    it('should setCollectionRuleForCode', async () => {
+    it('should set code execution type and sole right holder using configCode', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: ConfigCodeInput = {
+        community_account: 'test-community',
+        code_id: 99,
+        code_right_holder: {
+          exec_type: 1,
+          sole_right_accounts: ['daniel111111'],
+        },
+      };
       const packedParams = faker.lorem.words();
+
+      const setExecTypeInput: Setexectype = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        exec_type: input.code_right_holder.exec_type,
+        is_amend_code: false,
+      };
+
+      const setSoleExecInput: Setsoleexec = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        right_accounts: input.code_right_holder.sole_right_accounts,
+        right_pos_ids: [],
+        is_amend_code: false,
+      };
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETSOLEEXEC,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETEXECTYPE,
+          packed_params: packedParams,
+        },
+      ];
 
       const execCode = jest.spyOn(cif, 'execCode');
       execCode.mockResolvedValue({});
@@ -292,24 +384,53 @@ describe('test CanCommunity', () => {
       serializeActionData.mockResolvedValue(packedParams);
 
       // @ts-ignore
-      await cif.setCollectionRuleForCode(input);
-      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETCOLLECTRL, input);
-      expect(execCode).toBeCalledWith(
-        CODE_IDS.SET_COLLECTION_RULE_FOR_CODE,
-        ActionNameEnum.SETCOLLECTRL,
-        packedParams,
-        undefined,
-      );
+      await cif.configCode(input);
+      expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
+      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
     });
 
-    it('should setRightHolderForPosition', async () => {
+    it('should set amendment execution type and sole right holder using configCode', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: ConfigCodeInput = {
+        community_account: 'test-community',
+        code_id: 99,
+        amendment_right_holder: {
+          exec_type: 1,
+          sole_right_accounts: ['daniel111111'],
+        },
+      };
       const packedParams = faker.lorem.words();
+
+      const setExecTypeInput: Setexectype = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        exec_type: input.amendment_right_holder.exec_type,
+        is_amend_code: true,
+      };
+
+      const setSoleExecInput: Setsoleexec = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        right_accounts: input.amendment_right_holder.sole_right_accounts,
+        right_pos_ids: [],
+        is_amend_code: true,
+      };
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETSOLEEXEC,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETEXECTYPE,
+          packed_params: packedParams,
+        },
+      ];
 
       const execCode = jest.spyOn(cif, 'execCode');
       execCode.mockResolvedValue({});
@@ -318,14 +439,149 @@ describe('test CanCommunity', () => {
       serializeActionData.mockResolvedValue(packedParams);
 
       // @ts-ignore
-      await cif.setRightHolderForPosition(input);
-      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETRIGHTCODE, input);
-      expect(execCode).toBeCalledWith(
-        CODE_IDS.SET_RIGHT_HOLDER_FOR_POSITION,
-        ActionNameEnum.SETRIGHTCODE,
-        packedParams,
-        undefined,
-      );
+      await cif.configCode(input);
+      expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
+      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+    });
+
+    it('should set code collective rule using configCode', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input: ConfigCodeInput = {
+        community_account: 'test-community',
+        code_id: 99,
+        code_right_holder: {
+          exec_type: 1,
+          approval_type: 1,
+          proposer_right_accounts: ['daniel111111'],
+          voter_right_accounts: ['daniel111111'],
+          pass_rule: 60,
+          vote_duration: 600,
+        },
+      };
+      const packedParams = faker.lorem.words();
+
+      const setExecTypeInput: Setexectype = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        exec_type: input.code_right_holder.exec_type,
+        is_amend_code: false,
+      };
+
+      const setApprovalTypeInput: Setapprotype = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        approval_type: input.code_right_holder.approval_type,
+        is_amend_code: false,
+      };
+
+      const setProposerInput: Setproposer = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        right_accounts: input.code_right_holder.proposer_right_accounts,
+        right_pos_ids: [],
+        is_amend_code: false,
+      };
+
+      const setVoterInput: Setvoter = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        right_accounts: input.code_right_holder.voter_right_accounts,
+        right_pos_ids: [],
+        is_amend_code: false,
+      };
+
+      const setVoteRuleInput: Setvoterule = {
+        community_account: input.community_account,
+        code_id: input.code_id,
+        pass_rule: input.code_right_holder.pass_rule,
+        vote_duration: input.code_right_holder.vote_duration,
+        is_amend_code: false,
+      };
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETAPPROTYPE,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETPROPOSER,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETVOTER,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETVOTERULE,
+          packed_params: packedParams,
+        },
+        {
+          code_action: ActionNameEnum.SETEXECTYPE,
+          packed_params: packedParams,
+        },
+      ];
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      // @ts-ignore
+      await cif.configCode(input);
+      expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETAPPROTYPE, setApprovalTypeInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETPROPOSER, setProposerInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(3, _options, ActionNameEnum.SETVOTER, setVoterInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(4, _options, ActionNameEnum.SETVOTERULE, setVoteRuleInput);
+      expect(serializeActionData).toHaveBeenNthCalledWith(5, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
+      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+    });
+
+    it('should config for position', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input: Configpos = {
+        community_account: 'test-community',
+        pos_id: 999,
+        pos_name: 'position-test',
+        max_holder: 10,
+        filled_through: 1,
+        term: 99,
+        next_term_start_at: 1000,
+        voting_period: 100,
+        pass_rule: 76,
+        pos_candidate_accounts: ['daniel111111'],
+        pos_voter_accounts: ['daniel111111'],
+        pos_candidate_positions: [11],
+        pos_voter_positions: [15],
+      };
+      const packedParams = faker.lorem.words();
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.CONFIGPOS,
+          packed_params: packedParams,
+        },
+      ];
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      // @ts-ignore
+      await cif.configurePosition(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CONFIGPOS, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, 999);
     });
 
     it('should createPosition', async () => {
@@ -343,10 +599,17 @@ describe('test CanCommunity', () => {
       const serializeActionData = jest.spyOn(actions, 'serializeActionData');
       serializeActionData.mockResolvedValue(packedParams);
 
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.CREATEPOS,
+          packed_params: packedParams,
+        },
+      ];
+
       // @ts-ignore
       await cif.createPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CREATEPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.CREATE_POSITION, ActionNameEnum.CREATEPOS, packedParams, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.CREATE_POSITION, codeActions, CodeTypeEnum.NORMAL, undefined);
     });
 
     it('should dismissPosition', async () => {
@@ -355,7 +618,12 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: Dismisspos = {
+        community_account: 'test-community',
+        pos_id: 998,
+        holder: 'daniel111111',
+        dismissal_reason: 'test',
+      };
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
@@ -364,10 +632,17 @@ describe('test CanCommunity', () => {
       const serializeActionData = jest.spyOn(actions, 'serializeActionData');
       serializeActionData.mockResolvedValue(packedParams);
 
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.DISMISSPOS,
+          packed_params: packedParams,
+        },
+      ];
+
       // @ts-ignore
       await cif.dismissPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.DISMISSPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.DISMISS_POSITION, ActionNameEnum.DISMISSPOS, packedParams, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.DISMISS_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
     });
 
     it('should approvePosition', async () => {
@@ -376,11 +651,21 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: Approvepos = {
+        community_account: 'test-communitty',
+        pos_id: 998,
+      };
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
       execCode.mockResolvedValue({});
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.APPROVEPOS,
+          packed_params: packedParams,
+        },
+      ];
 
       const serializeActionData = jest.spyOn(actions, 'serializeActionData');
       serializeActionData.mockResolvedValue(packedParams);
@@ -388,7 +673,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.approvePosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.APPROVEPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.APPROVE_POSITION, ActionNameEnum.APPROVEPOS, packedParams, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
     });
 
     it('should appointPosition', async () => {
@@ -397,7 +682,12 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: Appointpos = {
+        community_account: 'test-community',
+        pos_id: 998,
+        holder_accounts: ['daniel111111'],
+        appoint_reason: 'test',
+      };
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
@@ -406,10 +696,17 @@ describe('test CanCommunity', () => {
       const serializeActionData = jest.spyOn(actions, 'serializeActionData');
       serializeActionData.mockResolvedValue(packedParams);
 
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.APPOINTPOS,
+          packed_params: packedParams,
+        },
+      ];
+
       // @ts-ignore
       await cif.appointPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.APPOINTPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.APPOINT_POSITION, ActionNameEnum.APPOINTPOS, packedParams, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
     });
   });
 

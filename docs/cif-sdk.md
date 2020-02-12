@@ -3,14 +3,14 @@
 ## Below is a list of supported actions:
 
 - [canCommunity](#canCommunity.createCanCommunity)
+
   - [.createCommunity(input: object)](#canCommunity.createCommunity)
   - [.createCode(input: object)](#canCommunity.execCode)
-  - [.setRightHolderForCode(input: object)](#canCommunity.setRightHolderForCode)
-  - [.setCollectionRuleForCode(input: object)](#canCommunity.setCollectionRuleForCode)
+  - [.configCode(input: object)](#canCommunity.configCode)
   - [.execCode(...input)](#canCommunity.execCode)
   - [.voteForCode(input: object)](#canCommunity.voteForCode)
   - [.createPosition(input: object)](#canCommunity.createPosition)
-  - [.setFillingRuleForPosition(input: object)](#canCommunity.setFillingRuleForPosition)
+  - [.configurePosition(input: object)](#canCommunity.configurePosition)
   - [.setRightHolderForPosition(input: object)](#canCommunity.setRightHolderForPosition)
   - [.nominatePosition(input: object)](#canCommunity.nominatePosition)
   - [.approvePosition(input: object)](#canCommunity.approvePosition)
@@ -18,7 +18,36 @@
   - [.appointPosition(input: object)](#canCommunity.appointPosition)
   - [.dismissPosition(input: object)](#canCommunity.dismissPosition)
 
+## Table diagram and list of supported query:
+
+- [table diagram and description](#canCommunity.tableDiagram)
+- [community](#canCommunity.listCommunities)
+  - [get list of all community information](#canCommunity.listCommunity)
+  - [get community information by community account](#canCommunity.getCommunityByCommunityAccount)
+  - [get community information by creator](#canCommunity.getCommunityByCreator)
+- [code](#canCommunity.listCodes)
+  - [get list of code of community](#canCommunity.listCodes)
+  - [get code by code id](#canCommunity.getCodebyId)
+  - [get code by code name](#canCommunity.getCodeByCodeName)
+  - [get list of code by reference id](#canCommunity.getCodeByReferenceId)
+  - [get sole decision of code](#canCommunity.getSoleDecisionOfCode)
+  - [get collective decision of code](#canCommunity.getCollectiveDecisionOfCode)
+  - [get sole decision of amendment code](#canCommunity.getSoleDecisionOfAmendCode)
+  - [get collective decision of amendment code](#canCommunity.getCollectiveDecisionOfAmendCode)
+  - [get list of code proposal by code id](#canCommunity.getCodeProposalByCodeId)
+  - [get list of code proposal by proposer](#canCommunity.getCodeProposalByProposer)
+  - [get code proposal by proposal name](#canCommunity.getCodeProposalByProposalName)
+- [position](#canCommunity.listPosition)
+  - [get list of positions of community](#canCommunity.listPosition)
+  - [get position by position id](#canCommunity.getPositionByPositionId)
+  - [get list of codes of position by position id](#canCommunity.getPositionCodeByPositionId)
+  - [get filling rule of position](#canCommunity.getFillingRuleOfPosition)
+  - [get proposal of position](#canCommunity.getProposalOfPosition)
+  - [get list candidates of position](#canCommunity.getCandidatesOfPosition)
+
 ---
+
+## List of supported actions:
 
 <a name="canCommunity.createCanCommunity"></a>
 
@@ -123,16 +152,34 @@ const result = canCommunity.createCommunity(input, initialCAT);
 
 ### execCodeInput (option)
 
-| Field **(input)**      | Description   |
-| ---------------------- | ------------- |
-| proposal_name (string) | Proposal name |
+| Field **(input)**                | Description                                                                |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| code_id (number)                 | name of code want to execute                                               |
+| code_actions (ExecutionCodeData) | list of actions and packed parameters to execute                           |
+| code_type                        | type of executing code, NORMAL = 0, AMENDMENT = 1, POSITION = 2, BADGE = 3 |
+| execCodeInput (Object)           | additional parameters to execute code like proposal_name                   |
+| referenceId (number)             | reference id relative to code such as position id or badge id              |
 
 **Example**
 
 ```js
-const execCodeInput = {
-  proposal_name: 'proposalName';
-};
+const input = {
+  community_account: 'community251';
+  code_name: 'test-code';
+  contract_name: 'governance';
+  code_actions: ['testaction1', 'testaction2'];
+}
+
+const packedParams = await serializeActionData(config, ActionNameEnum.CREATECODE, input);
+
+const codeActions = [
+  {
+    code_action: ActionNameEnum.CREATECODE,
+    packed_params: packedParams,
+  },
+];
+
+const result = await canCommunity.execCode(CODE_IDS.CREATE_CODE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
 ```
 
 ---
@@ -165,21 +212,12 @@ const result = canCommunity.execCode(code_id, code_action, packed_params, execCo
 
 **input**
 
-| Field **(input)**                       | Description                                        |
-| --------------------------------------- | -------------------------------------------------- |
-| community_account (string)              | CAN Account of the Community                       |
-| code_name (string)                      | Name of the Code to be configured                  |
-| contract_name (string)                  | The smart contract which run the code              |
-| code_actions (string[])                 | The code's action                                  |
-| code_exec_type (number)                 | 0: SOLE_DECISION, 1: COLLECTIVE_DECISION, 2 : BOTH |
-| amendment_exec_type (number)            |                                                    |
-| amendment_right_accounts (number)       |                                                    |
-| amendment_pos_ids_right_holder (number) |                                                    |
-| amendment_vote_duration (number)        |                                                    |
-| amendment_execution_duration (number)   |                                                    |
-| amendment_pass_rule (number)            |                                                    |
-| amendment_vote_right_accounts (number)  |                                                    |
-| amendment_vote_pos_ids (number)         |                                                    |
+| Field **(input)**          | Description                           |
+| -------------------------- | ------------------------------------- |
+| community_account (string) | CAN Account of the Community          |
+| code_name (string)         | Name of the Code to be configured     |
+| contract_name (string)     | The smart contract which run the code |
+| code_actions (string[])    | The code's action                     |
 
 ```js
 const input = {
@@ -187,7 +225,6 @@ const input = {
   code_name: 'test.collect',
   contract_name: 'governance23',
   code_actions: ['createCodeUser1', 'createCodeUser2'],
-  code_exec_type: 1,
 };
 
 const result = canCommunity.createCode(input, execCodeInput);
@@ -195,58 +232,45 @@ const result = canCommunity.createCode(input, execCodeInput);
 
 ---
 
-<a name="canCommunity.setRightHolderForCode"></a>
+<a name="canCommunity.configCode"></a>
 
 ### Set Right Holders for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-right-holders-for-a-code)**
 
-| Field **(input)**          | Description                            |
-| -------------------------- | -------------------------------------- |
-| community_account (string) | CAN Account of the Community           |
-| code_id (string)           | Id of the Code to be configured        |
-| right_accounts (string[])  | CAN Accounts of eligible Right Holders |
-| pos_ids (number[])         | List positions can run code            |
+| Field **(input)**                        | Description                          |
+| ---------------------------------------- | ------------------------------------ |
+| community_account (string)               | CAN Account of the Community         |
+| code_id (string)                         | Id of the Code to be configured      |
+| code_right_holder (RightHolderType)      | rule for execute of code             |
+| amendment_right_holder (RightHolderType) | rule for change right holder of code |
+
+**RightHolderType**
+| Field **(input)** | Description |
+| ------------------------------------| -------------------------------------- |
+| exec_type (number) | code execution type, 0 SOLE_DECISION, 1 COLLECTIVE_DECISION, 2 BOTH |
+| approval_type (number) | approval type in case of COLLECTIVE_DECISION, 0 SOLE_APPROVAL, 1 APPROVAL_CONSENSUS, 2 BOTH |
+| sole_right_accounts (EosName[]) | right holder accounts who can execute code in case of SOLE_DECISION |
+| sole_right_pos_ids (number[]) | right holder position ids who can execute code in case of SOLE_DECISION |
+| proposer_right_accounts (EosName[]) | right holder accounts who can create proposal in case of COLLECTIVE_DECISION |
+| proposer_right_pos_ids (number[]) | right holder position ids who can create proposal in case of COLLECTIVE_DECISION |
+| approver_right_accounts (EosName[]) | right holder accounts who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL |
+| approver_right_pos_ids (number[]) | right holder position ids who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL |
+| voter_right_accounts (EosName[]) | right holder account who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS |
+| voter_right_pos_ids (number[]) | right holder position ids who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS |
+| pass_rule (number) | percentage of pass rule of proposal |
+| vote_duration (number) | duration for voting for proposal |
 
 **Example**
 
 ```js
 const input = {
-  community_account: 'community413',
-  code_id: 'test.graphql',
-  right_accounts: ['creator.can'],
-  pos_ids: [],
+  community_account: 'test-community',
+  code_id: 99,
+  code_right_holder: {
+    exec_type: 1,
+    sole_right_accounts: ['daniel111111'],
+  },
 };
 const result = canCommunity.setRightHolderForCode(input, execCodeInput);
-```
-
----
-
-<a name="canCommunity.setCollectionRuleForCode"></a>
-
-### Set Collective Rules for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-collective-rules-for-a-code)**
-
-| Field **(input)**           | Description                                  |
-| --------------------------- | -------------------------------------------- |
-| community_account (string)  | CAN Account of the Community                 |
-| code_id (string)            | Id of the Code to be configured              |
-| vote_duration (number)      | The duration for voting                      |
-| execution_duration (number) | The duration for execution                   |
-| pass_rule (number)          | Minimum % votes to pass the election         |
-| right_accounts (string[])   | The voter accounts who can cote for the code |
-| pos_ids (number[])          | List positions can run code                  |
-
-**Example**
-
-```js
-const input = {
-  community_account: 'community413',
-  code_id: 'test.collect',
-  right_accounts: ['creator.can'],
-  pass_rule: 55,
-  execution_duration: 600,
-  vote_duration: 1200,
-  pos_ids: [],
-};
-const result = canCommunity.setCollectionRuleForCode(input, execCodeInput);
 ```
 
 ---
@@ -255,12 +279,12 @@ const result = canCommunity.setCollectionRuleForCode(input, execCodeInput);
 
 ### Vote for a Code **[API doc](http://git.baikal.io/can/governance-designer#vote-for-a-code)**
 
-| Field **(input)**          | Description                  |
-| -------------------------- | ---------------------------- |
-| community_account (string) | CAN Account of the Community |
-| proposal_name (string)     | The code's name              |
-| voter (string)             | The voter's name             |
-| vote_status (boolean)      | 0: UNVOTE, 1: VOTE           |
+| Field **(input)**           | Description                  |
+| --------------------------- | ---------------------------- |
+| community_account (EosName) | CAN Account of the Community |
+| proposal_name (EosName)     | The code's name              |
+| approver (EosName)          | The voter's name             |
+| vote_status (boolean)       | 0: UNVOTE, 1: VOTE           |
 
 **Example**
 
@@ -280,13 +304,21 @@ const result = canCommunity.voteForCode(input, execCodeInput);
 
 ### Create a Position **[API doc](http://git.baikal.io/can/governance-designer#create-a-position)**
 
-| Field **(input)**          | Description                        |
-| -------------------------- | ---------------------------------- |
-| community_account (string) | CAN Account of the Community       |
-| creator (string)           | Name of the creator                |
-| pos_name (string)          | Name of the Position to be created |
-| max_holder (number)        | Maximum number of Position Holders |
-| filled_through (number)    |                                    |
+| Field **(input)**                                 | Description                                                     |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| community_account (string)                        | CAN Account of the Community                                    |
+| creator (string)                                  | Name of the creator                                             |
+| pos_name (string)                                 | Name of the Position to be created                              |
+| max_holder (number)                               | Maximum number of Position Holders                              |
+| filled_through (number)                           | How to fill holder for this position, 0 APPOINTMENT, 1 ELECTION |
+| term (string) (for Election)                      | Term of position                                                |
+| next_term_start_at (string) (for Election)        |                                                                 |
+| pass_rule (number) (for Election)                 | % of Total Votes to be passed                                   |
+| voting_period (number) (for Election)             | duration for voting                                             |
+| pos_candidate_accounts (string[]) (for Election)  | CAN Accounts of eligible Candidates                             |
+| pos_candidate_positions (string[]) (for Election) | position ids of eligible Candidates                             |
+| pos_voter_accounts (string[]) (for Election)      | CAN Accounts of eligible vote for candidates                    |
+| pos_voter_positions (string[]) (for Election)     | position ids of eligible Candidates                             |
 
 **Example**
 
@@ -296,7 +328,7 @@ const input = {
   creator: 'creator1',
   pos_name: 'Lecle leader',
   max_holder: 100,
-  filled_through: 4,
+  filled_through: 1,
 };
 const result = canCommunity.createPosition(input, execCodeInput);
 ```
@@ -307,12 +339,12 @@ const result = canCommunity.createPosition(input, execCodeInput);
 
 ### Dismiss a Position **[API doc](http://git.baikal.io/can/governance-designer#dismiss-someone-from-a-position)**
 
-| Field **(input)**          | Description                  |
-| -------------------------- | ---------------------------- |
-| community_account (string) | CAN Account of the Community |
-| pos_id (number)            | Id of the position           |
-| holder (string)            | Name of the Holder           |
-| dismissal_reason (string)  |                              |
+| Field **(input)**           | Description                  |
+| --------------------------- | ---------------------------- |
+| community_account (EosName) | CAN Account of the Community |
+| pos_id (number)             | Id of the position           |
+| holder (EosName)            | Name of the Holder           |
+| dismissal_reason (string)   | Reason of dismissal          |
 
 **Example**
 
@@ -321,67 +353,52 @@ const input = {
   community_account: 'community413',
   pos_id: 1,
   holder: 'Lecle leader',
-  dismissal_reason: '',
+  dismissal_reason: 'test',
 };
 const result = canCommunity.dismissPosition(input, execCodeInput);
 ```
 
 ---
 
-<a name="canCommunity.setFillingRuleForPosition"></a>
+<a name="canCommunity.configurePosition"></a>
 
 ### Set Filling Rule for a Position **[API doc](http://git.baikal.io/can/governance-designer#set-filling-rule-for-a-position)**
 
-| Field **(input)**                        | Description                             |
-| ---------------------------------------- | --------------------------------------- |
-| exec_account (string)                    | CAN Account of user executing this code |
-| community_account (string)               | CAN Account of the Community            |
-| pos_id (string)                          | ID of the Position                      |
-| filling_type                             | 0 for Appointment and 1 for Election    |
-| start_at (string) (for Election)         | Starting time for Election term         |
-| end_at (string) (for Election)           | Ending time for Election term           |
-| pass_rule (number) (for Election)        | % of Total Votes to be passed           |
-| right_accounts (string[]) (for Election) | CAN Accounts of eligible Candidates     |
+| Field **(input)**                                 | Description                                  |
+| ------------------------------------------------- | -------------------------------------------- |
+| community_account (string)                        | CAN Account of the Community                 |
+| pos_id (number)                                   | ID of the Position                           |
+| pos_name (string)                                 | ID of the Position                           |
+| max_holder (number)                               | Max holder of position                       |
+| filled_through                                    | 0 for Appointment and 1 for Election         |
+| term (string) (for Election)                      | Term of position                             |
+| next_term_start_at (string) (for Election)        |                                              |
+| pass_rule (number) (for Election)                 | % of Total Votes to be passed                |
+| voting_period (number) (for Election)             | duration for voting                          |
+| pos_candidate_accounts (string[]) (for Election)  | CAN Accounts of eligible Candidates          |
+| pos_candidate_positions (string[]) (for Election) | position ids of eligible Candidates          |
+| pos_voter_accounts (string[]) (for Election)      | CAN Accounts of eligible vote for candidates |
+| pos_voter_positions (string[]) (for Election)     | position ids of eligible Candidates          |
 
 **Example**
 
 ```js
 const input = {
-  exec_account: 'creator.can',
   community_account: 'community413',
   pos_id: '1',
-  filling_type: 1,
-  start_at: '2019-11-28T03:06:38Z',
-  end_at: '2019-11-30T02:06:38Z',
+  pos_name: 'leader',
+  max_holder: 10,
+  filled_through: 1,
+  term: 11,
+  next_term_start_at: '2019-12-28T03:06:38Z',
+  voting_period: '2019-11-30T02:06:38Z',
   pass_rule: 76,
-  right_accounts: ['creator.can'],
+  pos_candidate_accounts: ['creator.can'],
+  pos_candidate_positions: [10, 11],
+  pos_voter_accounts: ['creator.can'],
+  pos_voter_positions: [10, 11],
 };
 const result = canCommunity.setFillingRuleForPosition(input, execCodeInput);
-```
-
----
-
-<a name="canCommunity.setRightHolderForPosition"></a>
-
-### Set Candidate Rights for a Position
-
-| Field **(input)**          | Description                         |
-| -------------------------- | ----------------------------------- |
-| community_account (string) | CAN Account of the Community        |
-| pos_id (string)            | ID of the Position                  |
-| right_accounts (string[])  | CAN Accounts of eligible Candidates |
-| pos_ids (number[])         | List positions can run code         |
-
-**Example**
-
-```js
-const input = {
-  community_account: 'community413',
-  pos_id: '1',
-  right_accounts: ['creator.can'],
-  pos_ids: [];
-};
-const result = canCommunity.setRightHolderForPosition(input, execCodeInput);
 ```
 
 ---
@@ -478,4 +495,445 @@ const input = {
   appoint_reason: '',
 };
 const result = canCommunity.appointPosition(input, execCodeInput);
+```
+
+## List of supported query:
+
+<a name="canCommunity.tableDiagram"></a>
+
+### Table diagram of Code in Force smart contract present at **[Link](http://git.baikal.io/can/governance-designer/wikis/%5BDatabase-diagram%5D-Code-in-Force-database-diagram)**
+
+| Table        | Description                                                                                                 | Scope                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| community    | community information                                                                                       | governance contract                         |
+| codes        | code of the community, each community have many code                                                        | community account                           |
+| coproposals  | proposal of code, each code can have many proposal                                                          | community account                           |
+| codeexecrule | sole decision rule of code in case that code execution type is sole decision                                | community account                           |
+| codevoterule | collective decision rule of code in case that code execution type is collective decision                    | community account                           |
+| amenexecrule | sole decision rule of amendment code                                                                        | community account                           |
+| amenvoterule | collective decision rule of amendment code                                                                  | community account                           |
+| position     | positions of community                                                                                      | community account                           |
+| fillingrule  | filling rule of position                                                                                    | community account                           |
+| posproposal  | position proposal, save proposal status, apporove time and pos_proposal_id use for scope of candidate table | community account                           |
+| poscandidate | candidates of position                                                                                      | pos_proposal_id define in posproposal table |
+
+---
+
+<a name="canCommunity.listCommunities"></a>
+
+### get list of all community information
+
+| Table     | Scope                    | Index   |
+| --------- | ------------------------ | ------- |
+| community | Governance contract name | primary |
+
+```js
+const table = 'community';
+const queryOption = {
+  scope: 'governance24',
+};
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCommunityByCommunityAccount"></a>
+
+### get community information by community account
+
+| Table     | Scope                    | Index   |
+| --------- | ------------------------ | ------- |
+| community | Governance contract name | primary |
+
+```js
+const table = 'community';
+const queryOption = {
+  scope: 'governance24',
+  lower_bound: 'community251',
+  upper_bound: 'community251',
+};
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCommunityByCreator"></a>
+
+### get community information by creator
+
+| Table     | Scope                    | Index                        |
+| --------- | ------------------------ | ---------------------------- |
+| community | Governance contract name | secondary index (by.creator) |
+
+```js
+const table = 'community';
+const queryOption = {
+  scope: 'governance24',
+  lower_bound: 'creator.can',
+  upper_bound: 'creator.can',
+  index_position: 2,
+  key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.listCodes"></a>
+
+### get list of code of community
+
+| Table | Scope             | Index   |
+| ----- | ----------------- | ------- |
+| codes | community account | primary |
+
+```js
+const table = 'codes';
+const queryOption = {
+  scope: 'community234',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodebyId"></a>
+
+### get code by code id
+
+| Table | Scope             | Index   |
+| ----- | ----------------- | ------- |
+| codes | community account | primary |
+
+```js
+const table = 'codes';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 1,
+  upper_bound: 1,
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodeByCodeName"></a>
+
+### get code by code name
+
+| Table | Scope             | Index                                      |
+| ----- | ----------------- | ------------------------------------------ |
+| codes | community account | secondary (by.code.name), index position 2 |
+
+```js
+const table = 'codes';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 'po.create',
+  upper_bound: 'po.create',
+  index_position: 2,
+  key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodeByReferenceId"></a>
+
+### get list of code by reference id
+
+| Table | Scope             | Index                                     |
+| ----- | ----------------- | ----------------------------------------- |
+| codes | community account | secondary (by.refer.id), index position 3 |
+
+```js
+const table = 'codes';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // reference id
+  upper_bound: 11, // reference id
+  index_position: 3,
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getSoleDecisionOfCode"></a>
+
+### get sole decision of code
+
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| codeexecrule | community account | primary |
+
+```js
+const table = 'codeexecrule';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // code id
+  upper_bound: 11, // code id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCollectiveDecisionOfCode"></a>
+
+### get collective decision of code
+
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| codevoterule | community account | primary |
+
+```js
+const table = 'codevoterule';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // code id
+  upper_bound: 11, // code id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getSoleDecisionOfAmendCode"></a>
+
+### get sole decision of amendment code
+
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| amenexecrule | community account | primary |
+
+```js
+const table = 'amenexecrule';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // code id
+  upper_bound: 11, // code id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCollectiveDecisionOfAmendCode"></a>
+
+### get collective decision of amendment code
+
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| amenvoterule | community account | primary |
+
+```js
+const table = 'amenvoterule';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // code id
+  upper_bound: 11, // code id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodeProposalByCodeId"></a>
+
+### get list of code proposal by code id
+
+| Table       | Scope             | Index                                    |
+| ----------- | ----------------- | ---------------------------------------- |
+| coproposals | community account | secondary (by.code.id), index position 3 |
+
+```js
+const table = 'coproposals';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 11, // code id
+  upper_bound: 11, // code id
+  index_position: 3,
+  key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodeProposalByProposer"></a>
+
+### get list of code proposal by proposer
+
+| Table       | Scope             | Index                                     |
+| ----------- | ----------------- | ----------------------------------------- |
+| coproposals | community account | secondary (by.proposer), index position 2 |
+
+```js
+const table = 'coproposals';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 'daniel111111', // proposer name
+  upper_bound: 'daniel111111', // proposer name
+  index_position: 2,
+  key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCodeProposalByProposalName"></a>
+
+### get code proposal by proposal name
+
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| coproposals | community account | primary |
+
+```js
+const table = 'coproposals';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 'proposal1', // proposal name
+  upper_bound: 'proposal1', // proposal name
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.listPosition"></a>
+
+### get list of positions of community
+
+| Table     | Scope             | Index   |
+| --------- | ----------------- | ------- |
+| positions | community account | primary |
+
+```js
+const table = 'position';
+const queryOption = {
+  scope: 'community234',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getPositionByPositionId"></a>
+
+### get position by position id
+
+| Table     | Scope             | Index   |
+| --------- | ----------------- | ------- |
+| positions | community account | primary |
+
+```js
+const table = 'positions';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 1, // position id
+  upper_bound: 1, // position id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getPositionCodeByPositionId"></a>
+
+### get list of codes of position by position id
+
+| Table | Scope             | Index                                     |
+| ----- | ----------------- | ----------------------------------------- |
+| codes | community account | secondary (by.refer.id), index position 3 |
+
+```js
+const table = 'codes';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 1, // position id
+  upper_bound: 1, // position id
+  index_position: 3,
+  key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getFillingRuleOfPosition"></a>
+
+### get filling rule of position
+
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| fillingrule | community account | primary |
+
+```js
+const table = 'fillingrule';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 1, // position id
+  upper_bound: 1, // position id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getProposalOfPosition"></a>
+
+### get proposal of position
+
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| posproposal | community account | primary |
+
+```js
+const table = 'posproposal';
+const queryOption = {
+  scope: 'community234',
+  lower_bound: 1, // position id
+  upper_bound: 1, // position id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCandidatesOfPosition"></a>
+
+### get list candidates of position
+
+| Table        | Scope                                       | Index   |
+| ------------ | ------------------------------------------- | ------- |
+| poscandidate | pos_proposal_id define in posproposal table | primary |
+
+```js
+const table = 'poscandidate';
+const queryOption = {
+  scope: 1, // pos_proposal_id
+};
+
+const result = await canCommunity.query(table, queryOption);
 ```

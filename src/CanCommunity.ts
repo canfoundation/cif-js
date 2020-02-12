@@ -1,17 +1,24 @@
 import { CanCommunityOptions, ExecCodeInput, QueryOptions, SignTrxOption } from './types/can-community-types';
-import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, TABLE } from './utils/constant';
+import { RightHolderType, ConfigCodeInput } from './types/right-holder-type';
+import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
 import { logger } from './utils/logger';
-import { CAT_Token, EosName } from './smart-contract-types/base-types';
+import { CodeTypeEnum, FillingType } from './types/smart-contract-enum';
+import { Asset, EosName } from './smart-contract-types/base-types';
 import { Create } from './smart-contract-types/Create';
 import { ActionNameEnum } from './smart-contract-types/ActionNameEnum';
 import { Createcode } from './smart-contract-types/Createcode';
 import { Execcode } from './smart-contract-types/Execcode';
+import { ExecutionCodeData } from './smart-contract-types/ExecutionCodeData';
 import { Proposecode } from './smart-contract-types/Proposecode';
-import { Setrightcode } from './smart-contract-types/Setrightcode';
-import { Setcollectrl } from './smart-contract-types/Setcollectrl';
-import { Voteforcode } from './smart-contract-types/Voteforcode';
+import { Setexectype } from './smart-contract-types/Setexectype';
+import { Setsoleexec } from './smart-contract-types/Setsoleexec';
+import { Setapprotype } from './smart-contract-types/Setapprotype';
+import { Setapprover } from './smart-contract-types/Setapprover';
+import { Setproposer } from './smart-contract-types/Setproposer';
+import { Setvoter } from './smart-contract-types/Setvoter';
+import { Setvoterule } from './smart-contract-types/Setvoterule';
 import { Voteforpos } from './smart-contract-types/Voteforpos';
 import { Nominatepos } from './smart-contract-types/Nominatepos';
 import { Createpos } from './smart-contract-types/Createpos';
@@ -19,9 +26,11 @@ import { Dismisspos } from './smart-contract-types/Dismisspos';
 import { Approvepos } from './smart-contract-types/Approvepos';
 import { Appointpos } from './smart-contract-types/Appointpos';
 import { Execproposal } from './smart-contract-types/Execproposal';
+import { Voteforcode } from './smart-contract-types/Voteforcode';
 import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
 import { JsonRpc } from 'eosjs/dist';
+import { Configpos } from './smart-contract-types/Configpos';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -70,28 +79,36 @@ export class CanCommunity {
    * @param code_action
    * @param packed_params
    * @param execCodeInput
+   * @param referenceId
    */
   async execCode(
     code_id: CODE_IDS,
-    code_action: ActionNameEnum,
-    packed_params: string,
+    code_actions: ExecutionCodeData[],
+    codeType: CodeTypeEnum,
     execCodeInput: ExecCodeInput = {},
+    referenceId?: number,
   ): Promise<any> {
     const community_account = this.config.signOption.communityCanAccount;
     const canAccount = this.config.signOption.canAccount;
 
-    const code = await utils.findCode(this.config.code, this.config.signOption.communityCanAccount, code_id);
+    const code = await utils.findCode(
+      this.config.code,
+      this.config.signOption.communityCanAccount,
+      code_id,
+      codeType,
+      referenceId,
+    );
 
     let trx;
+    const exec_type = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
 
-    switch (code.exec_type) {
+    switch (exec_type) {
       case EXECUTION_TYPE.SOLE_DECISION:
         const execCode: Execcode = {
           community_account,
           exec_account: canAccount,
           code_id: code.code_id,
-          code_action,
-          packed_params,
+          code_actions,
         };
 
         trx = {
@@ -109,8 +126,7 @@ export class CanCommunity {
           community_account,
           proposer: canAccount,
           code_id: code.code_id,
-          code_action,
-          data: packed_params,
+          code_actions,
           proposal_name,
         };
 
@@ -128,7 +144,7 @@ export class CanCommunity {
    * @param input
    * @param initialCAT example '10.0000 CAT'
    */
-  createCommunity(input: Create, initialCAT: CAT_Token) {
+  createCommunity(input: Create, initialCAT: Asset) {
     const trx = {
       actions: [
         {
@@ -149,52 +165,248 @@ export class CanCommunity {
     return this.signTrx(trx);
   }
 
+  async createConfigCodeActionInput(
+    communityAccount: EosName,
+    codeId: number,
+    input: RightHolderType,
+    isAmendmentCode: boolean,
+  ): Promise<ExecutionCodeData[]> {
+    const codeActions: ExecutionCodeData[] = [];
+
+    if (
+      (input.sole_right_accounts && input.sole_right_accounts.length) ||
+      (input.sole_right_pos_ids && input.sole_right_pos_ids.length)
+    ) {
+      const setSoleExecInput: Setsoleexec = {
+        community_account: communityAccount,
+        code_id: codeId,
+        right_accounts: input.sole_right_accounts || [],
+        right_pos_ids: input.sole_right_pos_ids || [],
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETSOLEEXEC,
+        packed_params: packedParams,
+      });
+    }
+
+    if (input.approval_type) {
+      const setApprovalTypeInput: Setapprotype = {
+        community_account: communityAccount,
+        code_id: codeId,
+        approval_type: input.approval_type,
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETAPPROTYPE, setApprovalTypeInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETAPPROTYPE,
+        packed_params: packedParams,
+      });
+    }
+
+    if (
+      (input.proposer_right_accounts && input.proposer_right_accounts.length) ||
+      (input.proposer_right_pos_ids && input.proposer_right_pos_ids.length)
+    ) {
+      const setProposerInput: Setproposer = {
+        community_account: communityAccount,
+        code_id: codeId,
+        right_accounts: input.proposer_right_accounts || [],
+        right_pos_ids: input.proposer_right_pos_ids || [],
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETPROPOSER, setProposerInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETPROPOSER,
+        packed_params: packedParams,
+      });
+    }
+
+    if (
+      (input.approver_right_accounts && input.approver_right_accounts.length) ||
+      (input.approver_right_pos_ids && input.approver_right_pos_ids)
+    ) {
+      const setApproverInput: Setapprover = {
+        community_account: communityAccount,
+        code_id: codeId,
+        right_accounts: input.approver_right_accounts || [],
+        right_pos_ids: input.approver_right_pos_ids || [],
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETAPPROVER, setApproverInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETAPPROVER,
+        packed_params: packedParams,
+      });
+    }
+
+    if (
+      (input.voter_right_accounts && input.voter_right_accounts.length) ||
+      (input.voter_right_pos_ids && input.voter_right_pos_ids.length)
+    ) {
+      const setVoterInput: Setvoter = {
+        community_account: communityAccount,
+        code_id: codeId,
+        right_accounts: input.voter_right_accounts || [],
+        right_pos_ids: input.voter_right_pos_ids || [],
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETVOTER, setVoterInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETVOTER,
+        packed_params: packedParams,
+      });
+    }
+
+    if (input.vote_duration && input.pass_rule) {
+      const setVoteRuleInput: Setvoterule = {
+        community_account: communityAccount,
+        code_id: codeId,
+        pass_rule: input.pass_rule,
+        vote_duration: input.vote_duration,
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETVOTERULE, setVoteRuleInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETVOTERULE,
+        packed_params: packedParams,
+      });
+    }
+
+    if (input.exec_type) {
+      const setExecTypeInput: Setexectype = {
+        community_account: communityAccount,
+        code_id: codeId,
+        exec_type: input.exec_type,
+        is_amend_code: isAmendmentCode,
+      };
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
+      codeActions.push({
+        code_action: ActionNameEnum.SETEXECTYPE,
+        packed_params: packedParams,
+      });
+    }
+
+    return codeActions;
+  }
+
   async createCode(input: Createcode, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATECODE, input);
 
-    return this.execCode(CODE_IDS.CREATE_CODE, ActionNameEnum.CREATECODE, packedParams, execCodeInput);
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.CREATECODE,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.CREATE_CODE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
   }
 
-  async setRightHolderForCode(input: Setrightcode, execCodeInput?: ExecCodeInput): Promise<any> {
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.SETRIGHTCODE, input);
+  async configCode(input: ConfigCodeInput, execCodeInput?: ExecCodeInput): Promise<any> {
+    let codeRightHolderSettingActions: ExecutionCodeData[] = [];
+    let amendmentRightHolderSettingActions: ExecutionCodeData[] = [];
 
-    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, ActionNameEnum.SETRIGHTCODE, packedParams, execCodeInput);
-  }
+    if (input.code_right_holder) {
+      codeRightHolderSettingActions = await this.createConfigCodeActionInput(
+        input.community_account,
+        input.code_id,
+        input.code_right_holder,
+        false,
+      );
+    }
 
-  async setCollectionRuleForCode(input: Setcollectrl, execCodeInput?: ExecCodeInput): Promise<any> {
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.SETCOLLECTRL, input);
+    if (input.amendment_right_holder) {
+      amendmentRightHolderSettingActions = await this.createConfigCodeActionInput(
+        input.community_account,
+        input.code_id,
+        input.amendment_right_holder,
+        true,
+      );
+    }
 
-    return this.execCode(CODE_IDS.SET_COLLECTION_RULE_FOR_CODE, ActionNameEnum.SETCOLLECTRL, packedParams, execCodeInput);
-  }
+    const codeActions: ExecutionCodeData[] = codeRightHolderSettingActions.concat(amendmentRightHolderSettingActions);
 
-  async setRightHolderForPosition(input: Setrightcode, execCodeInput?: ExecCodeInput): Promise<any> {
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.SETRIGHTCODE, input);
-
-    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_POSITION, ActionNameEnum.SETRIGHTCODE, packedParams, execCodeInput);
+    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, execCodeInput);
   }
 
   async createPosition(input: Createpos, execCodeInput?: ExecCodeInput): Promise<any> {
+    if (input.filled_through === FillingType.APPOINTMENT) {
+      input = {
+        ...input,
+        term: 0,
+        next_term_start_at: 0,
+        voting_period: 0,
+        pass_rule: 0,
+        pos_candidate_accounts: [],
+        pos_voter_accounts: [],
+        pos_candidate_positions: [],
+        pos_voter_positions: [],
+      };
+    }
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, input);
 
-    return this.execCode(CODE_IDS.CREATE_POSITION, ActionNameEnum.CREATEPOS, packedParams, execCodeInput);
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.CREATEPOS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.CREATE_POSITION, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
+  }
+
+  async configurePosition(input: Configpos, execCodeInput?: ExecCodeInput): Promise<any> {
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGPOS, input);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.CONFIGPOS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
   }
 
   async dismissPosition(input: Dismisspos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.DISMISSPOS, input);
 
-    return this.execCode(CODE_IDS.DISMISS_POSITION, ActionNameEnum.DISMISSPOS, packedParams, execCodeInput);
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.DISMISSPOS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.DISMISS_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
   }
 
   async approvePosition(input: Approvepos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.APPROVEPOS, input);
 
-    return this.execCode(CODE_IDS.APPROVE_POSITION, ActionNameEnum.APPROVEPOS, packedParams, execCodeInput);
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.APPROVEPOS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
   }
 
   async appointPosition(input: Appointpos, execCodeInput?: ExecCodeInput): Promise<any> {
     const packedParams = await serializeActionData(this.config, ActionNameEnum.APPOINTPOS, input);
 
-    return this.execCode(CODE_IDS.APPOINT_POSITION, ActionNameEnum.APPOINTPOS, packedParams, execCodeInput);
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.APPOINTPOS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
   }
 
   voteForCode(input: Voteforcode) {
@@ -230,106 +442,5 @@ export class CanCommunity {
     };
 
     return this.rpc.get_table_rows(queryInput);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getTableRows(
-    code: string,
-    scope: string,
-    table: string,
-    limit = -1,
-    lowerBound: any = null,
-    upperBound: any = null,
-    json = true,
-  ) {
-    let results: any;
-    const parameters = {
-      json,
-      code,
-      scope,
-      table,
-      lower_bound: lowerBound,
-      upper_bound: upperBound,
-      limit,
-    };
-
-    results = await this.rpc.get_table_rows(parameters);
-    return results.rows;
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllCommunities(size: number, lowerBound: string = null) {
-    return this.getTableRows(this.config.code, this.config.code, TABLE.COMMUNITY, size, lowerBound);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllCodeOfCommunity(communityAccount: string, size: number) {
-    return this.getTableRows(this.config.code, communityAccount, TABLE.CODES, size);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getCollectiveRuleOfCode(communityAccount: string, codeId: string) {
-    const results = await this.getTableRows(this.config.code, communityAccount, TABLE.COLLEC_RULES, 1, codeId);
-    return results[0];
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllCodeProposalOfCommunity(communityAccount: string, size: number) {
-    return this.getTableRows(this.config.code, communityAccount, TABLE.CO_PROPOSALS, size);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllPositionOfCommunity(communityAccount: string, size: number) {
-    return this.getTableRows(this.config.code, communityAccount, TABLE.POSITIONS, size);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getPosition(communityAccount: string, positionId: string) {
-    return this.getTableRows(this.config.code, communityAccount, TABLE.POSITIONS, 1, positionId);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getFillingRuleOfPosition(communityAccount: string, positionId: string) {
-    const results = await this.getTableRows(this.config.code, communityAccount, TABLE.FILLING_RULE, 1, positionId);
-    return results[0];
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllPositionProposalOfCommunity(communityAccount: string, size: number) {
-    return this.getTableRows(this.config.code, communityAccount, TABLE.POS_PROPOSAL, size);
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getProposalOfPosition(communityAccount: string, positionId: string) {
-    const results = await this.getTableRows(this.config.code, communityAccount, TABLE.POS_PROPOSAL, 1, positionId);
-    return results[0];
-  }
-
-  /**
-   * @deprecated will be remove on version > 0.9.10
-   */
-  async getAllCandidateOfPosition(communityAccount: string, positionId: string, size: number) {
-    const positionProposal = await this.getProposalOfPosition(communityAccount, positionId);
-    return this.getTableRows(this.config.code, positionProposal.pos_proposal_id, TABLE.POS_CANDIDATE, size, positionId);
   }
 }

@@ -11,7 +11,7 @@ map.set('uint64', 'number');
 map.set('float64', 'number');
 map.set('checksum256', 'number');
 map.set('name', 'EosName');
-map.set('asset', 'CAT_Token');
+map.set('asset', 'Asset');
 map.set('bool', 'boolean');
 map.set('bytes', 'string');
 map.set('time_point', 'string');
@@ -48,8 +48,11 @@ function typeMap(type: string, impHolder: Map<string, Set<string>>): string {
     case 'RightHolder[]':
     case 'CodeType':
     case 'CodeType[]':
+    case 'execution_code_data':
+    case 'execution_code_data[]':
       typeName = formatName(type);
       addImport(impHolder, `./${typeName}`, typeName);
+      typeName = type.endsWith('[]') ? typeName + '[]' : typeName;
       break;
     case 'name':
     case 'name[]':
@@ -57,7 +60,7 @@ function typeMap(type: string, impHolder: Map<string, Set<string>>): string {
       break;
     case 'asset':
     case 'asset[]':
-      addImport(impHolder, './base-types', 'CAT_Token');
+      addImport(impHolder, './base-types', 'Asset');
       break;
   }
   return typeName;
