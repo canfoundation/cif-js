@@ -344,6 +344,14 @@ export class CanCommunity {
         pos_candidate_positions: [],
         pos_voter_positions: [],
       };
+    } else {
+      input = {
+        ...input,
+        pos_candidate_accounts: input.pos_candidate_accounts || [],
+        pos_voter_accounts: input.pos_voter_accounts || [],
+        pos_candidate_positions: input.pos_candidate_positions || [],
+        pos_voter_positions: input.pos_voter_positions || [],
+      };
     }
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, input);
 
