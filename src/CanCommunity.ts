@@ -344,6 +344,14 @@ export class CanCommunity {
         pos_candidate_positions: [],
         pos_voter_positions: [],
       };
+    } else {
+      input = {
+        ...input,
+        pos_candidate_accounts: input.pos_candidate_accounts || [],
+        pos_voter_accounts: input.pos_voter_accounts || [],
+        pos_candidate_positions: input.pos_candidate_positions || [],
+        pos_voter_positions: input.pos_voter_positions || [],
+      };
     }
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, input);
 
@@ -358,6 +366,27 @@ export class CanCommunity {
   }
 
   async configurePosition(input: Configpos, execCodeInput?: ExecCodeInput): Promise<any> {
+    if (input.filled_through === FillingType.APPOINTMENT) {
+      input = {
+        ...input,
+        term: 0,
+        next_term_start_at: 0,
+        voting_period: 0,
+        pass_rule: 0,
+        pos_candidate_accounts: [],
+        pos_voter_accounts: [],
+        pos_candidate_positions: [],
+        pos_voter_positions: [],
+      };
+    } else {
+      input = {
+        ...input,
+        pos_candidate_accounts: input.pos_candidate_accounts || [],
+        pos_voter_accounts: input.pos_voter_accounts || [],
+        pos_candidate_positions: input.pos_candidate_positions || [],
+        pos_voter_positions: input.pos_voter_positions || [],
+      };
+    }
     const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGPOS, input);
 
     const codeActions: ExecutionCodeData[] = [
