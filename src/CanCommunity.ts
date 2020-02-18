@@ -29,7 +29,7 @@ import { Execproposal } from './smart-contract-types/Execproposal';
 import { Voteforcode } from './smart-contract-types/Voteforcode';
 import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
-import { JsonRpc, Numeric } from 'eosjs/dist';
+import { JsonRpc } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
 
 export class CanCommunity {
