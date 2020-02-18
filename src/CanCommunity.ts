@@ -29,7 +29,7 @@ import { Execproposal } from './smart-contract-types/Execproposal';
 import { Voteforcode } from './smart-contract-types/Voteforcode';
 import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
-import { JsonRpc } from 'eosjs/dist';
+import { JsonRpc, Numeric } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
 
 export class CanCommunity {
@@ -274,7 +274,7 @@ export class CanCommunity {
       });
     }
 
-    if (input.exec_type) {
+    if (typeof input.exec_type === 'number') {
       const setExecTypeInput: Setexectype = {
         community_account: communityAccount,
         code_id: codeId,
