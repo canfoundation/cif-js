@@ -590,7 +590,21 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input = {
+        community_account: 'test-community',
+        creator: 'creator',
+        pos_name: 'leader',
+        max_holder: 3,
+        filled_through: 0,
+        term: 0,
+        next_term_start_at: 0,
+        voting_period: 0,
+        pass_rule: 0,
+        pos_candidate_accounts: [],
+        pos_voter_accounts: [],
+        pos_candidate_positions: [],
+        pos_voter_positions: [],
+      };
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
