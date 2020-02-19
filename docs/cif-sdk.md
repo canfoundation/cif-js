@@ -188,12 +188,12 @@ const result = await canCommunity.execCode(CODE_IDS.CREATE_CODE, codeActions, Co
 
 ### Execute a Code
 
-| Field **(input)**             | Description                                              |
-| ----------------------------- | -------------------------------------------------------- |
-| code_id (string)              | Id of the Code to be configured                          |
-| code_action (string)          | The code's action                                        |
-| packed_params (string)        | The code's action which was convered to binary           |
-| execCodeInput (ExecCodeInput) | Additional parameters to execute code like proposal_name |
+| Field **(input)**             | Description                                    |
+| ----------------------------- | ---------------------------------------------- |
+| code_id (string)              | Id of the Code to be configured                |
+| code_action (string)          | The code's action                              |
+| packed_params (string)        | The code's action which was convered to binary |
+| execCodeInput (ExecCodeInput) |                                                |
 
 **Example**
 
@@ -234,7 +234,7 @@ const result = canCommunity.createCode(input, execCodeInput);
 
 <a name="canCommunity.configCode"></a>
 
-### Set Configuration for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-right-holders-for-a-code)**
+### Set Right Holders for a Code **[API doc](http://git.baikal.io/can/governance-designer#set-right-holders-for-a-code)**
 
 | Field **(input)**                        | Description                          |
 | ---------------------------------------- | ------------------------------------ |
@@ -270,7 +270,7 @@ const input = {
     sole_right_accounts: ['daniel111111'],
   },
 };
-const result = canCommunity.configCode(input, execCodeInput);
+const result = canCommunity.setRightHolderForCode(input, execCodeInput);
 ```
 
 ---
@@ -319,10 +319,6 @@ const result = canCommunity.voteForCode(input, execCodeInput);
 | pos_candidate_positions (string[]) (for Election) | position ids of eligible Candidates                             |
 | pos_voter_accounts (string[]) (for Election)      | CAN Accounts of eligible vote for candidates                    |
 | pos_voter_positions (string[]) (for Election)     | position ids of eligible Candidates                             |
-
-| Field         | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| execCodeInput | (optional) additional parameters to execute code like proposal_name |
 
 **Example**
 
@@ -829,7 +825,7 @@ const result = await canCommunity.query(table, queryOption);
 | positions | community account | primary |
 
 ```js
-const table = 'positions';
+const table = 'position';
 const queryOption = {
   scope: 'community234',
 };
