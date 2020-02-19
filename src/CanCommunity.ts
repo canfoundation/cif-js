@@ -274,7 +274,7 @@ export class CanCommunity {
       });
     }
 
-    if (input.exec_type) {
+    if (typeof input.exec_type === 'number') {
       const setExecTypeInput: Setexectype = {
         community_account: communityAccount,
         code_id: codeId,
