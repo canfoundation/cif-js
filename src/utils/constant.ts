@@ -6,6 +6,7 @@ export enum SIGN_TRX_METHOD {
 export enum EXECUTION_TYPE {
   SOLE_DECISION = 0,
   COLLECTIVE_DECISION,
+  BOTH,
 }
 
 export enum CODE_IDS {

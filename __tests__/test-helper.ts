@@ -17,6 +17,7 @@ export const options: CanCommunityOptions = {
     communityCanAccount: 'community242',
     signTrxMethod: SIGN_TRX_METHOD.CAN_PASS,
   },
+  cryptoBadgeContractAccount: 'badge',
 };
 
 it('should pass test', done => {

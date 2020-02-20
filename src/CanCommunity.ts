@@ -1,5 +1,5 @@
 import { CanCommunityOptions, ExecCodeInput, QueryOptions, SignTrxOption } from './types/can-community-types';
-import { RightHolderType, ConfigCodeInput } from './types/right-holder-type';
+import { ConfigCodeInput, RightHolderType } from './types/right-holder-type';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
@@ -100,43 +100,156 @@ export class CanCommunity {
     );
 
     let trx;
-    const exec_type = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
+    const execType = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
 
-    switch (exec_type) {
-      case EXECUTION_TYPE.SOLE_DECISION:
-        const execCode: Execcode = {
-          community_account,
-          exec_account: canAccount,
-          code_id: code.code_id,
-          code_actions,
-        };
+    if (execCodeInput.proposal_name) {
+      if (execType === EXECUTION_TYPE.SOLE_DECISION) {
+        throw new Error('Can not create proposal for sole decision code');
+      }
 
-        trx = {
-          actions: [this.makeAction(ActionNameEnum.EXECCODE, canAccount, execCode)],
-        };
-        break;
-      case EXECUTION_TYPE.COLLECTIVE_DECISION:
-        let { proposal_name } = execCodeInput;
-        if (!proposal_name) {
-          proposal_name = utils.randomEosName();
-          logger.debug('---- missing param proposal_name, auto generate one:', proposal_name);
-        }
+      const proposeCode: Proposecode = {
+        community_account,
+        proposer: canAccount,
+        code_id: code.code_id,
+        code_actions,
+        proposal_name: execCodeInput.proposal_name,
+      };
 
-        const proposeCode: Proposecode = {
-          community_account,
-          proposer: canAccount,
-          code_id: code.code_id,
-          code_actions,
-          proposal_name,
-        };
+      trx = {
+        actions: [this.makeAction(ActionNameEnum.PROPOSECODE, canAccount, proposeCode)],
+      };
+    } else {
+      if (execType === EXECUTION_TYPE.COLLECTIVE_DECISION) {
+        throw new Error('Can not execute for collective decision code');
+      }
 
-        trx = {
-          actions: [this.makeAction(ActionNameEnum.PROPOSECODE, canAccount, proposeCode)],
-        };
-        break;
+      const execCode: Execcode = {
+        community_account,
+        exec_account: canAccount,
+        code_id: code.code_id,
+        code_actions,
+      };
+
+      trx = {
+        actions: [this.makeAction(ActionNameEnum.EXECCODE, canAccount, execCode)],
+      };
     }
 
     return this.signTrx(trx);
+  }
+
+  async isRightHolderOfCode(codeId: number, account: EosName, execType: EXECUTION_TYPE, action: string) {
+    const isAmendCode = action === 'configCode';
+    let rightHolder;
+    if (execType === EXECUTION_TYPE.SOLE_DECISION) {
+      let codeExecRule;
+      if (isAmendCode) {
+        // if it is amendment action, get right holder from amenexecrule table
+        const amendExecRuleTable = await this.query(TableNameEnum.AMENEXECRULE, {
+          lower_bound: codeId,
+          upper_bound: codeId,
+        });
+        if (amendExecRuleTable.rows.length === 0) {
+          return false;
+        }
+        codeExecRule = amendExecRuleTable.rows[0];
+      } else {
+        // if it is normal action, get right holder from codeexecrule table
+        const codeExecRuleTable = await this.query(TableNameEnum.CODEEXECRULE, {
+          lower_bound: codeId,
+          upper_bound: codeId,
+        });
+        if (codeExecRuleTable.rows.length === 0) {
+          return false;
+        }
+        codeExecRule = codeExecRuleTable.rows[0];
+      }
+      rightHolder = codeExecRule.right_executor;
+    } else if (execType === EXECUTION_TYPE.COLLECTIVE_DECISION) {
+      let codeVoteRule;
+      if (isAmendCode) {
+        // if it is amendment code, get right holder from amenvoterule table
+        const amendVoteRuleTable = await this.query(TableNameEnum.AMENVOTERULE, {
+          lower_bound: 1,
+          upper_bound: 1,
+        });
+        if (amendVoteRuleTable.rows.length === 0) {
+          return false;
+        }
+        codeVoteRule = amendVoteRuleTable.rows[0];
+      } else {
+        // if it is amendment code, get right holder from codevoterule table
+        const codeVoteRuleTable = await this.query(TableNameEnum.CODEVOTERULE, {
+          lower_bound: 1,
+          upper_bound: 1,
+        });
+        if (codeVoteRuleTable.rows.length === 0) {
+          return false;
+        }
+        codeVoteRule = codeVoteRuleTable.rows[0];
+      }
+      rightHolder = codeVoteRule.right_proposer;
+    }
+
+    // check right holder is set or not
+    const isSetRightHolder =
+      rightHolder.accounts.length !== 0 ||
+      rightHolder.required_badges.length !== 0 ||
+      rightHolder.required_positions.length !== 0 ||
+      rightHolder.required_tokens.length !== 0;
+
+    if (!isSetRightHolder) {
+      // return false if right holder is not set
+      return false;
+    }
+
+    // check user account satisfy require accounts,
+    if (rightHolder.accounts.length !== 0 && !rightHolder.accounts.includes(account)) {
+      return false;
+    }
+
+    // check user badge satisfy require badges
+    if (rightHolder.required_badges.length) {
+      // get all user badges
+      const userBadgeTable = await this.query('cbadges', {
+        scope: account,
+        code: this.config.cryptoBadgeContractAccount,
+        limit: 500,
+      });
+
+      const userBadges = userBadgeTable.rows;
+
+      const userBadgeIds = userBadges.map(badge => badge.badgeid);
+
+      // check that user have all required badges
+      for (const id of rightHolder.required_badges) {
+        if (!userBadgeIds.includes(id)) {
+          return false;
+        }
+      }
+    }
+
+    // check user position statify require positions
+    if (rightHolder.required_positions.length) {
+      // get all positions of community that relative to required_positions
+      const positionTable = await this.query(TableNameEnum.POSITIONS, {
+        upper_bound: Math.max(...rightHolder.required_positions),
+        lower_bound: Math.min(...rightHolder.required_positions),
+      });
+
+      const positions = positionTable.rows;
+
+      for (const pos of positions) {
+        if (rightHolder.required_positions.includes(pos.pos_id)) {
+          // check that user have require position
+          if (!pos.holders.includes(account)) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -462,7 +575,7 @@ export class CanCommunity {
     });
   }
 
-  async query(table: TableNameEnum, queryOptions?: QueryOptions) {
+  async query(table: string, queryOptions?: QueryOptions) {
     const queryInput: QueryOptions = {
       code: this.config.code,
       table,
