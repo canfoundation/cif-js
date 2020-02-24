@@ -37,6 +37,14 @@ export interface ExecCodeInput {
   proposal_name?: EosName;
 }
 
+export interface VoteForPositionInput {
+  community_account: EosName;
+  pos_id: number;
+  voter: EosName;
+  candidates: EosName[];
+  vote_status: boolean;
+}
+
 export interface QueryOptions {
   json?: boolean;
   code?: EosName;
