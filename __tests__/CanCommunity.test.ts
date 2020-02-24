@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { options } from './test-helper';
 import { CanCommunity } from '../src';
 import { ActionNameEnum } from '../src/smart-contract-types/ActionNameEnum';
-import { SignTrxOption } from '../src/types/can-community-types';
+import { SignTrxOption, VoteForPositionInput } from '../src/types/can-community-types';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from '../src/utils/constant';
 import utils from '../src/utils/utils';
 import { Create } from '../src/smart-contract-types/Create';
@@ -25,7 +25,6 @@ import { Configpos } from '../src/smart-contract-types/Configpos';
 import { Dismisspos } from '../src/smart-contract-types/Dismisspos';
 import { Approvepos } from '../src/smart-contract-types/Approvepos';
 import { Appointpos } from '../src/smart-contract-types/Appointpos';
-
 describe('test CanCommunity', () => {
   const canPass: any = {
     signTx: jest.fn(),
@@ -755,21 +754,32 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: VoteForPositionInput = {
+        community_account: 'cifdemoaccm3',
+        pos_id: 3,
+        candidates: ['cifdemoaccx2'],
+        voter: 'cifdemoaccx2',
+        vote_status: true,
+      };
+
       const signTrx = jest.spyOn(cif, 'signTrx');
 
       // @ts-ignore
       cif.voteForPosition(input);
       // doing
       expect(signTrx).toBeCalledWith({
-        actions: [
-          {
-            account: _options.code,
-            authorization: [{ actor: _options.signOption.canAccount, permission: 'active' }],
-            data: input,
-            name: ActionNameEnum.VOTEFORPOS,
+        actions: input.candidates.map(candidate => ({
+          account: _options.code,
+          authorization: [{ actor: _options.signOption.canAccount, permission: 'active' }],
+          data: {
+            community_account: input.community_account,
+            pos_id: input.pos_id,
+            candidate,
+            voter: input.voter,
+            vote_status: input.vote_status,
           },
-        ],
+          name: ActionNameEnum.VOTEFORPOS,
+        })),
       });
     });
 
