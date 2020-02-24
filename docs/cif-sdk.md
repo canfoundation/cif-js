@@ -460,7 +460,7 @@ const result = canCommunity.approvePosition(input, execCodeInput);
 | community_account (string) | CAN Account of the Community              |
 | pos_id (string)            | ID of the Position                        |
 | voter (string)             | The voter's name                          |
-| candidate (string)         | CAN Account of the Candidate              |
+| candidates (EosName[])     | List of CAN Account of the Candidate      |
 | vote_status (boolean)      | `true` for agree and `false` for disagree |
 
 **Example**

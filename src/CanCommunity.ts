@@ -1,4 +1,10 @@
-import { CanCommunityOptions, ExecCodeInput, QueryOptions, SignTrxOption } from './types/can-community-types';
+import {
+  CanCommunityOptions,
+  ExecCodeInput,
+  QueryOptions,
+  SignTrxOption,
+  VoteForPositionInput,
+} from './types/can-community-types';
 import { ConfigCodeInput, RightHolderType } from './types/right-holder-type';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
 import { serializeActionData } from './utils/actions';
@@ -19,7 +25,6 @@ import { Setapprover } from './smart-contract-types/Setapprover';
 import { Setproposer } from './smart-contract-types/Setproposer';
 import { Setvoter } from './smart-contract-types/Setvoter';
 import { Setvoterule } from './smart-contract-types/Setvoterule';
-import { Voteforpos } from './smart-contract-types/Voteforpos';
 import { Nominatepos } from './smart-contract-types/Nominatepos';
 import { Createpos } from './smart-contract-types/Createpos';
 import { Dismisspos } from './smart-contract-types/Dismisspos';
@@ -557,9 +562,17 @@ export class CanCommunity {
     });
   }
 
-  voteForPosition(input: Voteforpos) {
+  voteForPosition(input: VoteForPositionInput) {
     return this.signTrx({
-      actions: [this.makeAction(ActionNameEnum.VOTEFORPOS, this.config.signOption.canAccount, input)],
+      actions: input.candidates.map(candidate =>
+        this.makeAction(ActionNameEnum.VOTEFORPOS, this.config.signOption.canAccount, {
+          community_account: input.community_account,
+          pos_id: input.pos_id,
+          voter: input.voter,
+          candidate,
+          vote_status: input.vote_status,
+        }),
+      ),
     });
   }
 
