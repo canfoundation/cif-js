@@ -6,6 +6,7 @@ export enum SIGN_TRX_METHOD {
 export enum EXECUTION_TYPE {
   SOLE_DECISION = 0,
   COLLECTIVE_DECISION,
+  BOTH,
 }
 
 export enum CODE_IDS {
@@ -13,7 +14,7 @@ export enum CODE_IDS {
   SET_RIGHT_HOLDER_FOR_CODE = 'co.amend',
   SET_COLLECTION_RULE_FOR_CODE = 'co.amend',
   CREATE_POSITION = 'po.create',
-  DISMISS_POSITION = 'po.dismisspos',
+  DISMISS_POSITION = 'po.dismiss',
   APPROVE_POSITION = 'po.config',
   APPOINT_POSITION = 'po.appoint',
   SET_RIGHT_HOLDER_FOR_POSITION = 'po.config',

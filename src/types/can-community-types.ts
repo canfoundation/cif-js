@@ -12,6 +12,10 @@ export interface CanCommunityOptions {
   code: EosName;
   userName: string;
   fetch?: (input?: string | Request, init?: RequestInit) => Promise<Response>;
+  /**
+   * this is crypto badge contract CAN account
+   */
+  cryptoBadgeContractAccount: EosName;
 }
 
 export interface SignTrxOption {
