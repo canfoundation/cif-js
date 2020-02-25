@@ -343,7 +343,7 @@ export class CanCommunity {
 
     if (
       (input.approver_right_accounts && input.approver_right_accounts.length) ||
-      (input.approver_right_pos_ids && input.approver_right_pos_ids)
+      (input.approver_right_pos_ids && input.approver_right_pos_ids.length)
     ) {
       const setApproverInput: Setapprover = {
         community_account: communityAccount,
