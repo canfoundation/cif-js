@@ -1,5 +1,5 @@
 import { EosName } from '../smart-contract-types/base-types';
-import { SIGN_TRX_METHOD } from '../utils/constant';
+import { SIGN_TRX_METHOD, EXECUTION_TYPE } from '../utils/constant';
 
 export interface CanCommunityOptions {
   canUrl: string;
@@ -39,6 +39,8 @@ export interface ExecCodeInput {
    * This param is required if the code is COLLECTIVE_DECISION execution type
    */
   proposal_name?: EosName;
+
+  user_exec_type: EXECUTION_TYPE;
 }
 
 export interface VoteForPositionInput {
