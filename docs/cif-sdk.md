@@ -157,8 +157,12 @@ const result = canCommunity.createCommunity(input, initialCAT);
 | code_id (number)                 | name of code want to execute                                               |
 | code_actions (ExecutionCodeData) | list of actions and packed parameters to execute                           |
 | code_type                        | type of executing code, NORMAL = 0, AMENDMENT = 1, POSITION = 2, BADGE = 3 |
-| execCodeInput (Object)           | additional parameters to execute code like proposal_name                   |
 | referenceId (number)             | reference id relative to code such as position id or badge id              |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
 
 **Example**
 
@@ -188,12 +192,16 @@ const result = await canCommunity.execCode(CODE_IDS.CREATE_CODE, codeActions, Co
 
 ### Execute a Code
 
-| Field **(input)**             | Description                                              |
-| ----------------------------- | -------------------------------------------------------- |
-| code_id (string)              | Id of the Code to be configured                          |
-| code_action (string)          | The code's action                                        |
-| packed_params (string)        | The code's action which was convered to binary           |
-| execCodeInput (ExecCodeInput) | Additional parameters to execute code like proposal_name |
+| Field **(input)**      | Description                                    |
+| ---------------------- | ---------------------------------------------- |
+| code_id (string)       | Id of the Code to be configured                |
+| code_action (string)   | The code's action                              |
+| packed_params (string) | The code's action which was convered to binary |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
 
 **Example**
 
@@ -219,6 +227,11 @@ const result = canCommunity.execCode(code_id, code_action, packed_params, execCo
 | contract_name (string)     | The smart contract which run the code |
 | code_actions (string[])    | The code's action                     |
 
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
+
 ```js
 const input = {
   community_account: 'community413',
@@ -243,21 +256,27 @@ const result = canCommunity.createCode(input, execCodeInput);
 | code_right_holder (RightHolderType)      | rule for execute of code             |
 | amendment_right_holder (RightHolderType) | rule for change right holder of code |
 
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
+
 **RightHolderType**
-| Field **(input)** | Description |
-| ------------------------------------| -------------------------------------- |
-| exec_type (number) | code execution type, 0 SOLE_DECISION, 1 COLLECTIVE_DECISION, 2 BOTH |
-| approval_type (number) | approval type in case of COLLECTIVE_DECISION, 0 SOLE_APPROVAL, 1 APPROVAL_CONSENSUS, 2 BOTH |
-| sole_right_accounts (EosName[]) | right holder accounts who can execute code in case of SOLE_DECISION |
-| sole_right_pos_ids (number[]) | right holder position ids who can execute code in case of SOLE_DECISION |
-| proposer_right_accounts (EosName[]) | right holder accounts who can create proposal in case of COLLECTIVE_DECISION |
-| proposer_right_pos_ids (number[]) | right holder position ids who can create proposal in case of COLLECTIVE_DECISION |
-| approver_right_accounts (EosName[]) | right holder accounts who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL |
-| approver_right_pos_ids (number[]) | right holder position ids who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL |
-| voter_right_accounts (EosName[]) | right holder account who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS |
-| voter_right_pos_ids (number[]) | right holder position ids who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS |
-| pass_rule (number) | percentage of pass rule of proposal |
-| vote_duration (number) | duration for voting for proposal |
+
+| Field **(input)**                   | Description                                                                                                     |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| exec_type (number)                  | code execution type, 0 SOLE_DECISION, 1 COLLECTIVE_DECISION, 2 BOTH                                             |
+| approval_type (number)              | approval type in case of COLLECTIVE_DECISION, 0 SOLE_APPROVAL, 1 APPROVAL_CONSENSUS, 2 BOTH                     |
+| sole_right_accounts (EosName[])     | right holder accounts who can execute code in case of SOLE_DECISION                                             |
+| sole_right_pos_ids (number[])       | right holder position ids who can execute code in case of SOLE_DECISION                                         |
+| proposer_right_accounts (EosName[]) | right holder accounts who can create proposal in case of COLLECTIVE_DECISION                                    |
+| proposer_right_pos_ids (number[])   | right holder position ids who can create proposal in case of COLLECTIVE_DECISION                                |
+| approver_right_accounts (EosName[]) | right holder accounts who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL                     |
+| approver_right_pos_ids (number[])   | right holder position ids who can approve code in case of COLLECTIVE_DECISION and SOLE_APPROVAL                 |
+| voter_right_accounts (EosName[])    | right holder account who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS      |
+| voter_right_pos_ids (number[])      | right holder position ids who can vote for code proposals in case of COLLECTIVE_DECISION and APPROVAL_CONSENSUS |
+| pass_rule (number)                  | percentage of pass rule of proposal                                                                             |
+| vote_duration (number)              | duration for voting for proposal                                                                                |
 
 **Example**
 
@@ -295,7 +314,7 @@ const input = {
   voter: 'voter',
   vote_status: true,
 };
-const result = canCommunity.voteForCode(input, execCodeInput);
+const result = canCommunity.voteForCode(input);
 ```
 
 ---
@@ -320,9 +339,10 @@ const result = canCommunity.voteForCode(input, execCodeInput);
 | pos_voter_accounts (string[]) (for Election)      | CAN Accounts of eligible vote for candidates                    |
 | pos_voter_positions (string[]) (for Election)     | position ids of eligible Candidates                             |
 
-| Field         | Description                                                         |
-| ------------- | ------------------------------------------------------------------- |
-| execCodeInput | (optional) additional parameters to execute code like proposal_name |
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
 
 **Example**
 
@@ -349,6 +369,11 @@ const result = canCommunity.createPosition(input, execCodeInput);
 | pos_id (number)             | Id of the position           |
 | holder (EosName)            | Name of the Holder           |
 | dismissal_reason (string)   | Reason of dismissal          |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
 
 **Example**
 
@@ -384,6 +409,11 @@ const result = canCommunity.dismissPosition(input, execCodeInput);
 | pos_voter_accounts (string[]) (for Election)      | CAN Accounts of eligible vote for candidates |
 | pos_voter_positions (string[]) (for Election)     | position ids of eligible Candidates          |
 
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
+
 **Example**
 
 ```js
@@ -402,7 +432,7 @@ const input = {
   pos_voter_accounts: ['creator.can'],
   pos_voter_positions: [10, 11],
 };
-const result = canCommunity.setFillingRuleForPosition(input, execCodeInput);
+const result = canCommunity.configurePosition(input, execCodeInput);
 ```
 
 ---
@@ -425,7 +455,7 @@ const input = {
   pos_id: 1,
   owner: 'owner',
 };
-const result = canCommunity.nominatePosition(input, execCodeInput);
+const result = canCommunity.nominatePosition(input);
 ```
 
 ---
@@ -473,7 +503,7 @@ const input = {
   candidate: 'daniel111112',
   vote_status: true,
 };
-const result = canCommunity.voteForPosition(input, execCodeInput);
+const result = canCommunity.voteForPosition(input);
 ```
 
 ---
@@ -482,12 +512,18 @@ const result = canCommunity.voteForPosition(input, execCodeInput);
 
 ### Appoint Someone to a Position **[API doc](http://git.baikal.io/can/governance-designer#appoint-someone-to-a-position)**
 
-| Field **(input)**          | Description                                            |
-| -------------------------- | ------------------------------------------------------ |
-| community_account (string) | CAN Account of the Community                           |
-| pos_id (string)            | ID of the Position                                     |
-| holder_accounts (string[]) | CAN Account of users to be appointed for this Position |
-| appoint_reason (string)    |                                                        |
+| Field **(input)**             | Description                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------- |
+| community_account (string)    | CAN Account of the Community                                                |
+| pos_id (string)               | ID of the Position                                                          |
+| holder_accounts (string[])    | CAN Account of users to be appointed for this Position                      |
+| appoint_reason (string)       |                                                                             |
+| execCodeInput (ExecCodeInput) | Additional parameters to execute code like proposal_name and user_exec_type |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
 
 **Example**
 

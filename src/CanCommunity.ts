@@ -90,7 +90,7 @@ export class CanCommunity {
     code_id: CODE_IDS,
     code_actions: ExecutionCodeData[],
     codeType: CodeTypeEnum,
-    execCodeInput: ExecCodeInput = {},
+    execCodeInput: ExecCodeInput = { user_exec_type: EXECUTION_TYPE.SOLE_DECISION },
     referenceId?: number,
   ): Promise<any> {
     const community_account = this.config.signOption.communityCanAccount;
@@ -105,11 +105,17 @@ export class CanCommunity {
     );
 
     let trx;
-    const execType = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
+    const codeExecType = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
 
-    if (execCodeInput.proposal_name) {
-      if (execType === EXECUTION_TYPE.SOLE_DECISION) {
+    if (execCodeInput.user_exec_type === EXECUTION_TYPE.COLLECTIVE_DECISION) {
+      if (codeExecType === EXECUTION_TYPE.SOLE_DECISION) {
         throw new Error('Can not create proposal for sole decision code');
+      }
+
+      let { proposal_name } = execCodeInput;
+      if (!proposal_name) {
+        proposal_name = utils.randomEosName();
+        logger.debug('---- missing param proposal_name, auto generate one:', proposal_name);
       }
 
       const proposeCode: Proposecode = {
@@ -117,14 +123,14 @@ export class CanCommunity {
         proposer: canAccount,
         code_id: code.code_id,
         code_actions,
-        proposal_name: execCodeInput.proposal_name,
+        proposal_name,
       };
 
       trx = {
         actions: [this.makeAction(ActionNameEnum.PROPOSECODE, canAccount, proposeCode)],
       };
     } else {
-      if (execType === EXECUTION_TYPE.COLLECTIVE_DECISION) {
+      if (codeExecType === EXECUTION_TYPE.COLLECTIVE_DECISION) {
         throw new Error('Can not execute for collective decision code');
       }
 

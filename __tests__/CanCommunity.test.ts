@@ -25,6 +25,7 @@ import { Configpos } from '../src/smart-contract-types/Configpos';
 import { Dismisspos } from '../src/smart-contract-types/Dismisspos';
 import { Approvepos } from '../src/smart-contract-types/Approvepos';
 import { Appointpos } from '../src/smart-contract-types/Appointpos';
+
 describe('test CanCommunity', () => {
   const canPass: any = {
     signTx: jest.fn(),
@@ -146,7 +147,10 @@ describe('test CanCommunity', () => {
           },
         ];
 
-        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL, { proposal_name: 'testproposal' });
+        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL, {
+          proposal_name: 'testproposal',
+          user_exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
+        });
         expect(signTrx).toBeCalledWith({
           actions: [
             {
