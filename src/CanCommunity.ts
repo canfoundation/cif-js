@@ -349,7 +349,7 @@ export class CanCommunity {
 
     if (
       (input.approver_right_accounts && input.approver_right_accounts.length) ||
-      (input.approver_right_pos_ids && input.approver_right_pos_ids)
+      (input.approver_right_pos_ids && input.approver_right_pos_ids.length)
     ) {
       const setApproverInput: Setapprover = {
         community_account: communityAccount,
@@ -462,7 +462,6 @@ export class CanCommunity {
         term: 0,
         next_term_start_at: 0,
         voting_period: 0,
-        pass_rule: 0,
         pos_candidate_accounts: [],
         pos_voter_accounts: [],
         pos_candidate_positions: [],
@@ -496,7 +495,6 @@ export class CanCommunity {
         term: 0,
         next_term_start_at: 0,
         voting_period: 0,
-        pass_rule: 0,
         pos_candidate_accounts: [],
         pos_voter_accounts: [],
         pos_candidate_positions: [],
