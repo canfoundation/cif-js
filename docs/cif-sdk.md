@@ -332,7 +332,6 @@ const result = canCommunity.voteForCode(input);
 | filled_through (number)                           | How to fill holder for this position, 0 APPOINTMENT, 1 ELECTION |
 | term (string) (for Election)                      | Term of position                                                |
 | next_term_start_at (string) (for Election)        |                                                                 |
-| pass_rule (number) (for Election)                 | % of Total Votes to be passed                                   |
 | voting_period (number) (for Election)             | duration for voting                                             |
 | pos_candidate_accounts (string[]) (for Election)  | CAN Accounts of eligible Candidates                             |
 | pos_candidate_positions (string[]) (for Election) | position ids of eligible Candidates                             |
@@ -402,7 +401,6 @@ const result = canCommunity.dismissPosition(input, execCodeInput);
 | filled_through                                    | 0 for Appointment and 1 for Election         |
 | term (string) (for Election)                      | Term of position                             |
 | next_term_start_at (string) (for Election)        |                                              |
-| pass_rule (number) (for Election)                 | % of Total Votes to be passed                |
 | voting_period (number) (for Election)             | duration for voting                          |
 | pos_candidate_accounts (string[]) (for Election)  | CAN Accounts of eligible Candidates          |
 | pos_candidate_positions (string[]) (for Election) | position ids of eligible Candidates          |
@@ -426,7 +424,6 @@ const input = {
   term: 11,
   next_term_start_at: '2019-12-28T03:06:38Z',
   voting_period: '2019-11-30T02:06:38Z',
-  pass_rule: 76,
   pos_candidate_accounts: ['creator.can'],
   pos_candidate_positions: [10, 11],
   pos_voter_accounts: ['creator.can'],
