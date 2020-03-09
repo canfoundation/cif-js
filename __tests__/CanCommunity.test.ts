@@ -615,6 +615,42 @@ describe('test CanCommunity', () => {
       expect(execCode).toBeCalledWith(CODE_IDS.CREATE_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
     });
 
+    it('should set code in force access', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input = {
+        community_account: 'test-community',
+        is_anyone: 0,
+        is_any_community_member: 0,
+        right_accounts: ['daniel111111', 'daniel221222'],
+        right_badge_ids: [1, 2, 3],
+        right_pos_ids: [99, 55, 33],
+      };
+
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETACCESS,
+          packed_params: packedParams,
+        },
+      ];
+
+      // @ts-ignore
+      await cif.setAccess(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETACCESS, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
+    });
+
     it('should set code execution type using configCode', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
@@ -878,7 +914,6 @@ describe('test CanCommunity', () => {
         term: 99,
         next_term_start_at: 1000,
         voting_period: 100,
-        pass_rule: 76,
         pos_candidate_accounts: ['daniel111111'],
         pos_voter_accounts: ['daniel111111'],
         pos_candidate_positions: [11],
