@@ -5,6 +5,7 @@
 - [canCommunity](#canCommunity.createCanCommunity)
 
   - [.createCommunity(input: object)](#canCommunity.createCommunity)
+  - [.setAccess(input: object)](#canCommunity.setAccess)
   - [.createCode(input: object)](#canCommunity.execCode)
   - [.configCode(input: object)](#canCommunity.configCode)
   - [.execCode(...input)](#canCommunity.execCode)
@@ -25,6 +26,7 @@
   - [get list of all community information](#canCommunity.listCommunity)
   - [get community information by community account](#canCommunity.getCommunityByCommunityAccount)
   - [get community information by creator](#canCommunity.getCommunityByCreator)
+  - [get access to code in force table](#canCommunity.getAccessTable)
 - [code](#canCommunity.listCodes)
   - [get list of code of community](#canCommunity.listCodes)
   - [get code by code id](#canCommunity.getCodebyId)
@@ -210,6 +212,48 @@ const code_id = 'co.amend';
 const code_action = 'createcode';
 const packed_params = '3048f0d94d2d25450000c8586590b1ca208242d3ccab3665020000c858e5608c310040c62a0b71ce3900';
 const result = canCommunity.execCode(code_id, code_action, packed_params, execCodeInput);
+```
+
+---
+
+<a name="canCommunity.setAccess"></a>
+
+- [.setAccess(input: object)](#canCommunity.setAccess)
+
+### Set who can access code in force
+
+community_account: EosName;
+is_anyone: boolean;
+is_any_community_member: boolean;
+right_accounts: EosName[];
+right_badge_ids: number[];
+right_pos_ids: number[];
+
+**input**
+
+| Field **(input)**                 | Description                            |
+| --------------------------------- | -------------------------------------- |
+| community_account (string)        | CAN Account of the Community           |
+| is_anyone (boolean)               | is anyone can access CiF               |
+| is_any_community_member (boolean) | is any community member can access CiF |
+| right_accounts (string[])         | list of account can access CiF         |
+| right_badge_ids (string[])        | list of badge ids can access CiF       |
+| right_pos_ids (string[])          | list of position ids can access CiF    |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | Execution type user want to execute                                             |
+
+```js
+const input = {
+  community_account: 'community413',
+  code_name: 'test.collect',
+  contract_name: 'governance23',
+  code_actions: ['createCodeUser1', 'createCodeUser2'],
+};
+
+const result = canCommunity.createCode(input, execCodeInput);
 ```
 
 ---
@@ -970,6 +1014,27 @@ const result = await canCommunity.query(table, queryOption);
 const table = 'poscandidate';
 const queryOption = {
   scope: 1, // pos_proposal_id
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getAccessTable"></a>
+
+- [get access to code in force table](#canCommunity.getAccessTable)
+
+### get access to code in force table
+
+| Table     | Scope                  | Index           |
+| --------- | ---------------------- | --------------- |
+| accession | community account name | singleton table |
+
+```js
+const table = 'accession';
+const queryOption = {
+  scope: 'community234', // pos_proposal_id
 };
 
 const result = await canCommunity.query(table, queryOption);

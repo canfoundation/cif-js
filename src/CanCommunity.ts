@@ -36,6 +36,7 @@ import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
 import { JsonRpc } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
+import { Setaccess } from './smart-contract-types/Setaccess';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -287,6 +288,19 @@ export class CanCommunity {
     };
 
     return this.signTrx(trx);
+  }
+
+  async setAccess(input: Setaccess, execCodeInput?: ExecCodeInput): Promise<any> {
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.SETACCESS, input);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.SETACCESS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
   }
 
   async createConfigCodeActionInput(
