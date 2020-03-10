@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { options } from './test-helper';
 import { CanCommunity } from '../src';
 import { ActionNameEnum } from '../src/smart-contract-types/ActionNameEnum';
-import { SignTrxOption } from '../src/types/can-community-types';
+import { SignTrxOption, VoteForPositionInput } from '../src/types/can-community-types';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from '../src/utils/constant';
 import utils from '../src/utils/utils';
 import { Create } from '../src/smart-contract-types/Create';
@@ -147,7 +147,10 @@ describe('test CanCommunity', () => {
           },
         ];
 
-        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL);
+        await cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL, {
+          proposal_name: 'testproposal',
+          user_exec_type: EXECUTION_TYPE.COLLECTIVE_DECISION,
+        });
         expect(signTrx).toBeCalledWith({
           actions: [
             {
@@ -217,6 +220,324 @@ describe('test CanCommunity', () => {
             },
           ],
         });
+      });
+    });
+  });
+
+  describe('test right holder check', () => {
+    it('should return false if right holder is not set', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
+      expect(res).toBe(false);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.CODEEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+    });
+
+    it('should return false if user account is not includes in right accounts', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: ['daniel222222', 'daniel333333'],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(false);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+    });
+
+    it('should return true if user account is includes in right accounts', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: ['daniel111111', 'daniel333333'],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(true);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+    });
+
+    it('should return false if user does not satisfy position requirement', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [1],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            pos_id: 1,
+            pos_name: 'Admin',
+            max_holder: 10,
+            holders: ['daniel222222'],
+            fulfillment_type: 0,
+            refer_codes: [
+              {
+                key: 'po.appoint',
+                value: 5,
+              },
+              {
+                key: 'po.config',
+                value: 4,
+              },
+              {
+                key: 'po.dismiss',
+                value: 6,
+              },
+            ],
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(false);
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.POSITIONS, { lower_bound: 1, upper_bound: 1 });
+    });
+
+    it('should return true if user satisfy position requirement', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [1],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            pos_id: 1,
+            pos_name: 'Admin',
+            max_holder: 10,
+            holders: ['abc111111111', 'daniel111111'],
+            fulfillment_type: 0,
+            refer_codes: [
+              {
+                key: 'po.appoint',
+                value: 5,
+              },
+              {
+                key: 'po.config',
+                value: 4,
+              },
+              {
+                key: 'po.dismiss',
+                value: 6,
+              },
+            ],
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(true);
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.POSITIONS, { lower_bound: 1, upper_bound: 1 });
+    });
+
+    it('should return false if user does not satisfy badges requirement', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [10, 99],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            badgeid: 11,
+            issuer: '1cryptobadge',
+          },
+          {
+            badgeid: 22,
+            issuer: '1cryptobadge',
+          },
+        ],
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(false);
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, 'cbadges', {
+        limit: 500,
+        scope: account,
+        code: _options.cryptoBadgeContractAccount,
+      });
+    });
+
+    it('should return true if user satisfy badges requirement', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 0,
+              required_badges: [10, 99],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            badgeid: 10,
+            issuer: '1cryptobadge',
+          },
+          {
+            badgeid: 99,
+            issuer: '1cryptobadge',
+          },
+        ],
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
+      expect(res).toBe(true);
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, 'cbadges', {
+        limit: 500,
+        scope: account,
+        code: _options.cryptoBadgeContractAccount,
       });
     });
   });
@@ -292,6 +613,42 @@ describe('test CanCommunity', () => {
       await cif.createCode(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CREATECODE, input);
       expect(execCode).toBeCalledWith(CODE_IDS.CREATE_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
+    });
+
+    it('should set code in force access', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input = {
+        community_account: 'test-community',
+        is_anyone: 0,
+        is_any_community_member: 0,
+        right_accounts: ['daniel111111', 'daniel221222'],
+        right_badge_ids: [1, 2, 3],
+        right_pos_ids: [99, 55, 33],
+      };
+
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.SETACCESS,
+          packed_params: packedParams,
+        },
+      ];
+
+      // @ts-ignore
+      await cif.setAccess(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETACCESS, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
     });
 
     it('should set code execution type using configCode', async () => {
@@ -557,7 +914,6 @@ describe('test CanCommunity', () => {
         term: 99,
         next_term_start_at: 1000,
         voting_period: 100,
-        pass_rule: 76,
         pos_candidate_accounts: ['daniel111111'],
         pos_voter_accounts: ['daniel111111'],
         pos_candidate_positions: [11],
@@ -590,7 +946,20 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input = {
+        community_account: 'test-community',
+        creator: 'creator',
+        pos_name: 'leader',
+        max_holder: 3,
+        filled_through: 0,
+        term: 0,
+        next_term_start_at: 0,
+        voting_period: 0,
+        pos_candidate_accounts: [],
+        pos_voter_accounts: [],
+        pos_candidate_positions: [],
+        pos_voter_positions: [],
+      };
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
@@ -741,21 +1110,32 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
-      const input = {};
+      const input: VoteForPositionInput = {
+        community_account: 'cifdemoaccm3',
+        pos_id: 3,
+        candidates: ['cifdemoaccx2'],
+        voter: 'cifdemoaccx2',
+        vote_status: true,
+      };
+
       const signTrx = jest.spyOn(cif, 'signTrx');
 
       // @ts-ignore
       cif.voteForPosition(input);
       // doing
       expect(signTrx).toBeCalledWith({
-        actions: [
-          {
-            account: _options.code,
-            authorization: [{ actor: _options.signOption.canAccount, permission: 'active' }],
-            data: input,
-            name: ActionNameEnum.VOTEFORPOS,
+        actions: input.candidates.map(candidate => ({
+          account: _options.code,
+          authorization: [{ actor: _options.signOption.canAccount, permission: 'active' }],
+          data: {
+            community_account: input.community_account,
+            pos_id: input.pos_id,
+            candidate,
+            voter: input.voter,
+            vote_status: input.vote_status,
           },
-        ],
+          name: ActionNameEnum.VOTEFORPOS,
+        })),
       });
     });
 
