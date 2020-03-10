@@ -7,7 +7,8 @@ import { CodeTypeEnum } from '../../src/types/smart-contract-enum';
 describe('test some utility functions', () => {
   app.init(options.canUrl, options.fetch);
 
-  it('should get code id', async () => {
+  // skip due to test request directly to can net
+  xit('should get code id', async () => {
     const code = await utils.findCode(options.code, 'community244', CODE_IDS.CREATE_POSITION, CodeTypeEnum.NORMAL);
     expect(code.code_id).toEqual(1);
     expect(code.code_name).toEqual(CODE_IDS.CREATE_POSITION);
