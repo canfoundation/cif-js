@@ -37,6 +37,7 @@ import { TableNameEnum } from './smart-contract-types/TableNameEnum';
 import { JsonRpc } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
 import { Setaccess } from './smart-contract-types/Setaccess';
+import { RightHolder } from './smart-contract-types/RightHolder';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -150,6 +151,20 @@ export class CanCommunity {
     return this.signTrx(trx);
   }
 
+  async isAccessHolder(communityAccount: EosName, account: EosName) {
+    const accessionTable = await this.query(TableNameEnum.ACCESSION, {
+      scope: communityAccount,
+    });
+
+    if (!accessionTable || !accessionTable.rows) {
+      throw Error('Accession table is not exist');
+    }
+
+    const rightHolder = accessionTable?.rows[0].right_access;
+
+    return this.checkRightHolder(rightHolder, account);
+  }
+
   async isRightHolderOfCode(codeId: number, account: EosName, execType: EXECUTION_TYPE, action: string) {
     const isAmendCode = action === 'configCode';
     let rightHolder;
@@ -203,6 +218,10 @@ export class CanCommunity {
       rightHolder = codeVoteRule.right_proposer;
     }
 
+    return this.checkRightHolder(rightHolder, account);
+  }
+
+  async checkRightHolder(rightHolder: RightHolder, account: EosName) {
     // check right holder is set or not
     const isSetRightHolder =
       rightHolder.accounts.length !== 0 ||
