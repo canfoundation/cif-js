@@ -225,6 +225,37 @@ describe('test CanCommunity', () => {
   });
 
   describe('test CiF access check', () => {
+    it('should return true if right holder is any one', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const commumityAccount = 'cifcomtest11';
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            right_access: {
+              is_anyone: 1,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isAccessHolder(commumityAccount, account);
+      expect(res).toBe(true);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
+    });
+
     it('should return false if right holder is not set', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
@@ -254,7 +285,6 @@ describe('test CanCommunity', () => {
       const res = await cif.isAccessHolder(commumityAccount, account);
       expect(res).toBe(false);
       expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
-      expect(true).toBe(true);
     });
 
     it('should return true if user account is includes in right accounts', async () => {
