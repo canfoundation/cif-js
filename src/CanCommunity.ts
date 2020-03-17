@@ -5,7 +5,7 @@ import {
   SignTrxOption,
   VoteForPositionInput,
 } from './types/can-community-types';
-import { ConfigCodeInput, RightHolderType } from './types/right-holder-type';
+import { ConfigCodeInput, CodeSetting } from './types/right-holder-type';
 import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
@@ -339,20 +339,16 @@ export class CanCommunity {
   async createConfigCodeActionInput(
     communityAccount: EosName,
     codeId: number,
-    input: RightHolderType,
+    input: CodeSetting,
     isAmendmentCode: boolean,
   ): Promise<ExecutionCodeData[]> {
     const codeActions: ExecutionCodeData[] = [];
 
-    if (
-      (input.sole_right_accounts && input.sole_right_accounts.length) ||
-      (input.sole_right_pos_ids && input.sole_right_pos_ids.length)
-    ) {
+    if (input.right_sole_executor) {
       const setSoleExecInput: Setsoleexec = {
         community_account: communityAccount,
         code_id: codeId,
-        right_accounts: input.sole_right_accounts || [],
-        right_pos_ids: input.sole_right_pos_ids || [],
+        right_sole_executor: input.right_sole_executor,
         is_amend_code: isAmendmentCode,
       };
       const packedParams = await serializeActionData(this.config, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
@@ -376,15 +372,11 @@ export class CanCommunity {
       });
     }
 
-    if (
-      (input.proposer_right_accounts && input.proposer_right_accounts.length) ||
-      (input.proposer_right_pos_ids && input.proposer_right_pos_ids.length)
-    ) {
+    if (input.right_proposer) {
       const setProposerInput: Setproposer = {
         community_account: communityAccount,
         code_id: codeId,
-        right_accounts: input.proposer_right_accounts || [],
-        right_pos_ids: input.proposer_right_pos_ids || [],
+        right_proposer: input.right_proposer,
         is_amend_code: isAmendmentCode,
       };
       const packedParams = await serializeActionData(this.config, ActionNameEnum.SETPROPOSER, setProposerInput);
@@ -394,15 +386,11 @@ export class CanCommunity {
       });
     }
 
-    if (
-      (input.approver_right_accounts && input.approver_right_accounts.length) ||
-      (input.approver_right_pos_ids && input.approver_right_pos_ids.length)
-    ) {
+    if (input.right_approver) {
       const setApproverInput: Setapprover = {
         community_account: communityAccount,
         code_id: codeId,
-        right_accounts: input.approver_right_accounts || [],
-        right_pos_ids: input.approver_right_pos_ids || [],
+        right_approver: input.right_approver,
         is_amend_code: isAmendmentCode,
       };
       const packedParams = await serializeActionData(this.config, ActionNameEnum.SETAPPROVER, setApproverInput);
@@ -412,15 +400,11 @@ export class CanCommunity {
       });
     }
 
-    if (
-      (input.voter_right_accounts && input.voter_right_accounts.length) ||
-      (input.voter_right_pos_ids && input.voter_right_pos_ids.length)
-    ) {
+    if (input.right_voter) {
       const setVoterInput: Setvoter = {
         community_account: communityAccount,
         code_id: codeId,
-        right_accounts: input.voter_right_accounts || [],
-        right_pos_ids: input.voter_right_pos_ids || [],
+        right_voter: input.right_voter,
         is_amend_code: isAmendmentCode,
       };
       const packedParams = await serializeActionData(this.config, ActionNameEnum.SETVOTER, setVoterInput);
