@@ -15,7 +15,7 @@ describe('test some utility functions', () => {
         {
           code_id: 1,
           code_name: 'po.create',
-          contract_name: 'governance24',
+          contract_name: 'governance',
           code_actions: ['createpos'],
           code_exec_type: 1,
           amendment_exec_type: 0,
@@ -27,7 +27,7 @@ describe('test some utility functions', () => {
 
     const code = await utils.findCode(options.code, 'community242', CODE_IDS.CREATE_POSITION, CodeTypeEnum.NORMAL);
     expect(get_table_rows).toBeCalledWith({
-      code: 'governance24',
+      code: 'governance',
       scope: 'community242',
       table: 'codes',
       lower_bound: 'po.create',
@@ -48,7 +48,7 @@ describe('test some utility functions', () => {
         {
           code_id: 11,
           code_name: 'po.config',
-          contract_name: 'governance24',
+          contract_name: 'governance',
           code_actions: ['configpos'],
           code_exec_type: 1,
           amendment_exec_type: 0,
@@ -57,7 +57,7 @@ describe('test some utility functions', () => {
         {
           code_id: 12,
           code_name: 'po.appoint',
-          contract_name: 'governance24',
+          contract_name: 'governance',
           code_actions: ['appointpos'],
           code_exec_type: 1,
           amendment_exec_type: 0,
@@ -69,7 +69,7 @@ describe('test some utility functions', () => {
 
     const code = await utils.findCode(options.code, 'community242', CODE_IDS.CONFIGURE_POSITION, CodeTypeEnum.POSITION, 99);
     expect(get_table_rows).toBeCalledWith({
-      code: 'governance24',
+      code: 'governance',
       scope: 'community242',
       table: 'codes',
       lower_bound: 99,
