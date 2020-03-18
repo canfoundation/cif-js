@@ -37,7 +37,7 @@ async function findCode(
   referenceId?: number,
 ): Promise<any> {
   let res;
-  if (code_type === CodeTypeEnum.NORMAL || code_type === CodeTypeEnum.AMENDMENT) {
+  if (code_type === CodeTypeEnum.NORMAL) {
     const codeTable = await app.rpc.get_table_rows({
       code,
       scope: community_account,
@@ -62,6 +62,16 @@ async function findCode(
     if (positionCodes.length) {
       res = positionCodes.find(c => c.code_name === code_id);
     }
+  } else if (code_type === CodeTypeEnum.AMENDMENT) {
+    const codeTable = await app.rpc.get_table_rows({
+      code,
+      scope: community_account,
+      table: TableNameEnum.CODES,
+      lower_bound: referenceId,
+      upper_bound: referenceId,
+    });
+
+    res = codeTable?.rows[0];
   }
 
   logger.debug('---- getCodeId - get_table_rows', JSON.stringify(res));

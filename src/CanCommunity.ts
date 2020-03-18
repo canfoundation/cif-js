@@ -485,7 +485,7 @@ export class CanCommunity {
 
     const codeActions: ExecutionCodeData[] = codeRightHolderSettingActions.concat(amendmentRightHolderSettingActions);
 
-    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, execCodeInput);
+    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, execCodeInput, input.code_id);
   }
 
   async createPosition(input: Createpos, execCodeInput?: ExecCodeInput): Promise<any> {

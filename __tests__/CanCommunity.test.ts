@@ -754,7 +754,13 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.configCode(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set code execution type and sole right holder using configCode', async () => {
@@ -809,7 +815,13 @@ describe('test CanCommunity', () => {
       await cif.configCode(input);
       expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set amendment execution type and sole right holder using configCode', async () => {
@@ -864,7 +876,13 @@ describe('test CanCommunity', () => {
       await cif.configCode(input);
       expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set code collective rule using configCode', async () => {
@@ -961,7 +979,13 @@ describe('test CanCommunity', () => {
       expect(serializeActionData).toHaveBeenNthCalledWith(3, _options, ActionNameEnum.SETVOTER, setVoterInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(4, _options, ActionNameEnum.SETVOTERULE, setVoteRuleInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(5, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should config for position', async () => {
