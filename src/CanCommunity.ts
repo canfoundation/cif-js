@@ -224,10 +224,10 @@ export class CanCommunity {
   async checkRightHolder(rightHolder: RightHolder, account: EosName) {
     // check right holder is set or not
     const isSetRightHolder =
-      rightHolder.accounts.length !== 0 ||
-      rightHolder.required_badges.length !== 0 ||
-      rightHolder.required_positions.length !== 0 ||
-      rightHolder.required_tokens.length !== 0;
+      rightHolder.accounts.length > 0 ||
+      rightHolder.required_badges.length > 0 ||
+      rightHolder.required_positions.length > 0 ||
+      rightHolder.required_tokens.length > 0;
 
     if (!isSetRightHolder) {
       // return false if right holder is not set
@@ -235,12 +235,12 @@ export class CanCommunity {
     }
 
     // check user account satisfy require accounts,
-    if (rightHolder.accounts.length !== 0 && !rightHolder.accounts.includes(account)) {
-      return false;
+    if (rightHolder.accounts.includes(account)) {
+      return true;
     }
 
     // check user badge satisfy require badges
-    if (rightHolder.required_badges.length > 0) {
+    if (rightHolder.required_badges.length) {
       // get all user badges
       const userBadgeTable = await this.query('cbadges', {
         scope: account,
@@ -254,14 +254,14 @@ export class CanCommunity {
 
       // check that user have all required badges
       for (const id of rightHolder.required_badges) {
-        if (!userBadgeIds.includes(id)) {
-          return false;
+        if (userBadgeIds.includes(id)) {
+          return true;
         }
       }
     }
 
     // check user position statify require positions
-    if (rightHolder.required_positions.length > 0) {
+    if (rightHolder.required_positions.length) {
       // get all positions of community that relative to required_positions
       const positionTable = await this.query(TableNameEnum.POSITIONS, {
         upper_bound: Math.max(...rightHolder.required_positions),
@@ -273,14 +273,14 @@ export class CanCommunity {
       for (const pos of positions) {
         if (rightHolder.required_positions.includes(pos.pos_id)) {
           // check that user have require position
-          if (!pos.holders.includes(account)) {
-            return false;
+          if (pos.holders.includes(account)) {
+            return true;
           }
         }
       }
     }
 
-    return true;
+    return false;
   }
 
   /**
