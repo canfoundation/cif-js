@@ -235,12 +235,12 @@ export class CanCommunity {
     }
 
     // check user account satisfy require accounts,
-    if (rightHolder.accounts.includes(account)) {
+    if (rightHolder.accounts.length > 0 && rightHolder.accounts.includes(account)) {
       return true;
     }
 
     // check user badge satisfy require badges
-    if (rightHolder.required_badges.length) {
+    if (rightHolder.required_badges.length > 0) {
       // get all user badges
       const userBadgeTable = await this.query('cbadges', {
         scope: account,
@@ -261,7 +261,7 @@ export class CanCommunity {
     }
 
     // check user position statify require positions
-    if (rightHolder.required_positions.length) {
+    if (rightHolder.required_positions.length > 0) {
       // get all positions of community that relative to required_positions
       const positionTable = await this.query(TableNameEnum.POSITIONS, {
         upper_bound: Math.max(...rightHolder.required_positions),
