@@ -40,12 +40,16 @@
   - [get list of code proposal by proposer](#canCommunity.getCodeProposalByProposer)
   - [get code proposal by proposal name](#canCommunity.getCodeProposalByProposalName)
 - [position](#canCommunity.listPosition)
+
   - [get list of positions of community](#canCommunity.listPosition)
   - [get position by position id](#canCommunity.getPositionByPositionId)
   - [get list of codes of position by position id](#canCommunity.getPositionCodeByPositionId)
   - [get filling rule of position](#canCommunity.getFillingRuleOfPosition)
   - [get proposal of position](#canCommunity.getProposalOfPosition)
   - [get list candidates of position](#canCommunity.getCandidatesOfPosition)
+
+- [utils](#canCommunity.listUtil)
+  - [check user is right holder of code](#canCommunity.checkRightHolder)
 
 ---
 
@@ -1038,4 +1042,24 @@ const queryOption = {
 };
 
 const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.checkRightHolder"></a>
+
+### check user is right holder of code
+
+| Field (input) | Description                                                    |
+| ------------- | -------------------------------------------------------------- |
+| codeId        | Id of the Code to be checked                                   |
+| account       | community account to be checked                                |
+| execType      | execution type, 0 SOLE_DECISION, 1 COLLECTIVE_DECISION, 2 BOTH |
+| action        | The code's action                                              |
+
+```js
+const account = 'daniel111111';
+const codeId = 1;
+
+const result = await cif.isRightHolderOfCode(codeId, account, 0, 'createcode'); // return a boolean
 ```
