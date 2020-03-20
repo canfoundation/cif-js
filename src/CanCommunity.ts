@@ -116,7 +116,7 @@ export class CanCommunity {
 
       let { proposal_name } = execCodeInput;
       if (!proposal_name) {
-        proposal_name = utils.randomEosName();
+        proposal_name = utils.randomEosName(null, '12345abcdefghijklmnopqrstuvwxyz');
         logger.debug('---- missing param proposal_name, auto generate one:', proposal_name);
       }
 
