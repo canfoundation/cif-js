@@ -83,12 +83,11 @@ function randomNumberInRange(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function randomEosName(length?: number): EosName {
+function randomEosName(length?: number, characters = '.12345abcdefghijklmnopqrstuvwxyz'): EosName {
   if (!length) {
     length = randomNumberInRange(8, 12);
   }
 
-  const characters = '.12345abcdefghijklmnopqrstuvwxyz';
   const charactersLength = characters.length;
   let result = '';
   for (let i = 0; i < length; i++) {
