@@ -156,7 +156,7 @@ export class CanCommunity {
       scope: communityAccount,
     });
 
-    if (!accessionTable || !accessionTable.rows) {
+    if (!accessionTable || !accessionTable.rows || !accessionTable.rows.length) {
       throw Error('Accession table is not exist');
     }
 
@@ -223,6 +223,11 @@ export class CanCommunity {
 
   async checkRightHolder(rightHolder: RightHolder, account: EosName) {
     // check right holder is set or not
+    // TODO check the case that is_any_community_member
+    if (rightHolder.is_any_community_member || rightHolder.is_anyone) {
+      return true;
+    }
+
     const isSetRightHolder =
       rightHolder.accounts.length > 0 ||
       rightHolder.required_badges.length > 0 ||
