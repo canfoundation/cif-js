@@ -48,7 +48,7 @@ async function findCode(
       key_type: 'i64',
     });
     res = codeTable?.rows[0];
-  } else if (code_type === CodeTypeEnum.POSITION) {
+  } else if (code_type === CodeTypeEnum.POSITION || code_type === CodeTypeEnum.BADGE) {
     const codeTable = await app.rpc.get_table_rows({
       code,
       scope: community_account,
@@ -58,9 +58,9 @@ async function findCode(
       index_position: 3,
       key_type: 'i64',
     });
-    const positionCodes = codeTable?.rows;
-    if (positionCodes.length) {
-      res = positionCodes.find(c => c.code_name === code_id);
+    const listOfReferenceCodes = codeTable?.rows;
+    if (listOfReferenceCodes.length) {
+      res = listOfReferenceCodes.find(c => c.code_name === code_id);
     }
   } else if (code_type === CodeTypeEnum.AMENDMENT) {
     const codeTable = await app.rpc.get_table_rows({
