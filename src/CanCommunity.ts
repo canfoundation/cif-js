@@ -10,7 +10,7 @@ import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
 import { logger } from './utils/logger';
-import { CodeTypeEnum, FillingType } from './types/smart-contract-enum';
+import { CodeTypeEnum } from './types/smart-contract-enum';
 import { Asset, EosName } from './smart-contract-types/base-types';
 import { Create } from './smart-contract-types/Create';
 import { ActionNameEnum } from './smart-contract-types/ActionNameEnum';
@@ -38,6 +38,15 @@ import { JsonRpc } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
 import { Setaccess } from './smart-contract-types/Setaccess';
 import { RightHolder } from './smart-contract-types/RightHolder';
+import { Createbadge } from './smart-contract-types/Createbadge';
+import {
+  buildConfigBadgeInput,
+  buildConfigPositionInput,
+  buildCreateBadgeInput,
+  buildCreatePositionInput,
+} from './utils/inputBuilder';
+import { Configbadge } from './smart-contract-types/Configbadge';
+import { Issuebadge } from './smart-contract-types/Issuebadge';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -116,7 +125,7 @@ export class CanCommunity {
 
       let { proposal_name } = execCodeInput;
       if (!proposal_name) {
-        proposal_name = utils.randomEosName();
+        proposal_name = utils.randomEosName(null, '12345abcdefghijklmnopqrstuvwxyz');
         logger.debug('---- missing param proposal_name, auto generate one:', proposal_name);
       }
 
@@ -156,7 +165,7 @@ export class CanCommunity {
       scope: communityAccount,
     });
 
-    if (!accessionTable || !accessionTable.rows) {
+    if (!accessionTable || !accessionTable.rows || !accessionTable.rows.length) {
       throw Error('Accession table is not exist');
     }
 
@@ -223,11 +232,16 @@ export class CanCommunity {
 
   async checkRightHolder(rightHolder: RightHolder, account: EosName) {
     // check right holder is set or not
+    // TODO check the case that is_any_community_member
+    if (rightHolder.is_any_community_member || rightHolder.is_anyone) {
+      return true;
+    }
+
     const isSetRightHolder =
-      rightHolder.accounts.length !== 0 ||
-      rightHolder.required_badges.length !== 0 ||
-      rightHolder.required_positions.length !== 0 ||
-      rightHolder.required_tokens.length !== 0;
+      rightHolder.accounts.length > 0 ||
+      rightHolder.required_badges.length > 0 ||
+      rightHolder.required_positions.length > 0 ||
+      rightHolder.required_tokens.length > 0;
 
     if (!isSetRightHolder) {
       // return false if right holder is not set
@@ -235,12 +249,12 @@ export class CanCommunity {
     }
 
     // check user account satisfy require accounts,
-    if (rightHolder.accounts.length !== 0 && !rightHolder.accounts.includes(account)) {
-      return false;
+    if (rightHolder.accounts.length > 0 && rightHolder.accounts.includes(account)) {
+      return true;
     }
 
     // check user badge satisfy require badges
-    if (rightHolder.required_badges.length) {
+    if (rightHolder.required_badges.length > 0) {
       // get all user badges
       const userBadgeTable = await this.query('cbadges', {
         scope: account,
@@ -254,14 +268,14 @@ export class CanCommunity {
 
       // check that user have all required badges
       for (const id of rightHolder.required_badges) {
-        if (!userBadgeIds.includes(id)) {
-          return false;
+        if (userBadgeIds.includes(id)) {
+          return true;
         }
       }
     }
 
     // check user position statify require positions
-    if (rightHolder.required_positions.length) {
+    if (rightHolder.required_positions.length > 0) {
       // get all positions of community that relative to required_positions
       const positionTable = await this.query(TableNameEnum.POSITIONS, {
         upper_bound: Math.max(...rightHolder.required_positions),
@@ -273,14 +287,14 @@ export class CanCommunity {
       for (const pos of positions) {
         if (rightHolder.required_positions.includes(pos.pos_id)) {
           // check that user have require position
-          if (!pos.holders.includes(account)) {
-            return false;
+          if (pos.holders.includes(account)) {
+            return true;
           }
         }
       }
     }
 
-    return true;
+    return false;
   }
 
   /**
@@ -485,31 +499,12 @@ export class CanCommunity {
 
     const codeActions: ExecutionCodeData[] = codeRightHolderSettingActions.concat(amendmentRightHolderSettingActions);
 
-    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, execCodeInput);
+    return this.execCode(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, execCodeInput, input.code_id);
   }
 
   async createPosition(input: Createpos, execCodeInput?: ExecCodeInput): Promise<any> {
-    if (input.filled_through === FillingType.APPOINTMENT) {
-      input = {
-        ...input,
-        term: 0,
-        next_term_start_at: 0,
-        voting_period: 0,
-        pos_candidate_accounts: [],
-        pos_voter_accounts: [],
-        pos_candidate_positions: [],
-        pos_voter_positions: [],
-      };
-    } else {
-      input = {
-        ...input,
-        pos_candidate_accounts: input.pos_candidate_accounts || [],
-        pos_voter_accounts: input.pos_voter_accounts || [],
-        pos_candidate_positions: input.pos_candidate_positions || [],
-        pos_voter_positions: input.pos_voter_positions || [],
-      };
-    }
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, input);
+    const serializeInput = buildCreatePositionInput(input);
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEPOS, serializeInput);
 
     const codeActions: ExecutionCodeData[] = [
       {
@@ -522,27 +517,8 @@ export class CanCommunity {
   }
 
   async configurePosition(input: Configpos, execCodeInput?: ExecCodeInput): Promise<any> {
-    if (input.filled_through === FillingType.APPOINTMENT) {
-      input = {
-        ...input,
-        term: 0,
-        next_term_start_at: 0,
-        voting_period: 0,
-        pos_candidate_accounts: [],
-        pos_voter_accounts: [],
-        pos_candidate_positions: [],
-        pos_voter_positions: [],
-      };
-    } else {
-      input = {
-        ...input,
-        pos_candidate_accounts: input.pos_candidate_accounts || [],
-        pos_voter_accounts: input.pos_voter_accounts || [],
-        pos_candidate_positions: input.pos_candidate_positions || [],
-        pos_voter_positions: input.pos_voter_positions || [],
-      };
-    }
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGPOS, input);
+    const serializeInput = buildConfigPositionInput(input);
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGPOS, serializeInput);
 
     const codeActions: ExecutionCodeData[] = [
       {
@@ -617,6 +593,47 @@ export class CanCommunity {
     return this.signTrx({
       actions: [this.makeAction(ActionNameEnum.NOMINATEPOS, this.config.signOption.canAccount, input)],
     });
+  }
+
+  async createBadge(input: Createbadge, execCodeInput?: ExecCodeInput): Promise<any> {
+    const serializeInput = buildCreateBadgeInput(input);
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CREATEBADGE, serializeInput);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.CREATEBADGE,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.CREATE_BADGE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
+  }
+
+  async configBadge(input: Configbadge, execCodeInput?: ExecCodeInput): Promise<any> {
+    const serializeInput = buildConfigBadgeInput(input);
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGBADGE, serializeInput);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.CONFIGBADGE,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE, execCodeInput);
+  }
+
+  async issueBadge(input: Issuebadge, execCodeInput?: ExecCodeInput): Promise<any> {
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.ISSUEBADGE, input);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.ISSUEBADGE,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE, execCodeInput);
   }
 
   execProposal(input: Execproposal) {

@@ -37,7 +37,7 @@ async function findCode(
   referenceId?: number,
 ): Promise<any> {
   let res;
-  if (code_type === CodeTypeEnum.NORMAL || code_type === CodeTypeEnum.AMENDMENT) {
+  if (code_type === CodeTypeEnum.NORMAL) {
     const codeTable = await app.rpc.get_table_rows({
       code,
       scope: community_account,
@@ -48,7 +48,7 @@ async function findCode(
       key_type: 'i64',
     });
     res = codeTable?.rows[0];
-  } else if (code_type === CodeTypeEnum.POSITION) {
+  } else if (code_type === CodeTypeEnum.POSITION || code_type === CodeTypeEnum.BADGE) {
     const codeTable = await app.rpc.get_table_rows({
       code,
       scope: community_account,
@@ -58,10 +58,20 @@ async function findCode(
       index_position: 3,
       key_type: 'i64',
     });
-    const positionCodes = codeTable?.rows;
-    if (positionCodes.length) {
-      res = positionCodes.find(c => c.code_name === code_id);
+    const listOfReferenceCodes = codeTable?.rows;
+    if (listOfReferenceCodes.length) {
+      res = listOfReferenceCodes.find(c => c.code_name === code_id);
     }
+  } else if (code_type === CodeTypeEnum.AMENDMENT) {
+    const codeTable = await app.rpc.get_table_rows({
+      code,
+      scope: community_account,
+      table: TableNameEnum.CODES,
+      lower_bound: referenceId,
+      upper_bound: referenceId,
+    });
+
+    res = codeTable?.rows[0];
   }
 
   logger.debug('---- getCodeId - get_table_rows', JSON.stringify(res));
@@ -73,12 +83,11 @@ function randomNumberInRange(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-function randomEosName(length?: number): EosName {
+function randomEosName(length?: number, characters = '.12345abcdefghijklmnopqrstuvwxyz'): EosName {
   if (!length) {
     length = randomNumberInRange(8, 12);
   }
 
-  const characters = '.12345abcdefghijklmnopqrstuvwxyz';
   const charactersLength = characters.length;
   let result = '';
   for (let i = 0; i < length; i++) {

@@ -20,4 +20,7 @@ export enum CODE_IDS {
   APPOINT_POSITION = 'po.appoint',
   SET_RIGHT_HOLDER_FOR_POSITION = 'po.config',
   CONFIGURE_POSITION = 'po.config',
+  CREATE_BADGE = 'ba.create',
+  ISSUE_BADGE = 'ba.issue',
+  CONFIG_BADGE = 'ba.config',
 }

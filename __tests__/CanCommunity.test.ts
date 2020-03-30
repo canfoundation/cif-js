@@ -25,6 +25,9 @@ import { Configpos } from '../src/smart-contract-types/Configpos';
 import { Dismisspos } from '../src/smart-contract-types/Dismisspos';
 import { Approvepos } from '../src/smart-contract-types/Approvepos';
 import { Appointpos } from '../src/smart-contract-types/Appointpos';
+import { Createbadge } from '../src/smart-contract-types/Createbadge';
+import { Configbadge } from '../src/smart-contract-types/Configbadge';
+import { Issuebadge } from '../src/smart-contract-types/Issuebadge';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
@@ -225,6 +228,37 @@ describe('test CanCommunity', () => {
   });
 
   describe('test CiF access check', () => {
+    it('should return true if right holder is any one', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const commumityAccount = 'cifcomtest11';
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            right_access: {
+              is_anyone: 1,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isAccessHolder(commumityAccount, account);
+      expect(res).toBe(true);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
+    });
+
     it('should return false if right holder is not set', async () => {
       const _options = _.cloneDeep(options);
       _options.signOption.userId = faker.random.uuid();
@@ -254,7 +288,6 @@ describe('test CanCommunity', () => {
       const res = await cif.isAccessHolder(commumityAccount, account);
       expect(res).toBe(false);
       expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
-      expect(true).toBe(true);
     });
 
     it('should return true if user account is includes in right accounts', async () => {
@@ -754,7 +787,13 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.configCode(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set code execution type and sole right holder using configCode', async () => {
@@ -809,7 +848,13 @@ describe('test CanCommunity', () => {
       await cif.configCode(input);
       expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set amendment execution type and sole right holder using configCode', async () => {
@@ -864,7 +909,13 @@ describe('test CanCommunity', () => {
       await cif.configCode(input);
       expect(serializeActionData).toHaveBeenNthCalledWith(1, _options, ActionNameEnum.SETSOLEEXEC, setSoleExecInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(2, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should set code collective rule using configCode', async () => {
@@ -961,7 +1012,13 @@ describe('test CanCommunity', () => {
       expect(serializeActionData).toHaveBeenNthCalledWith(3, _options, ActionNameEnum.SETVOTER, setVoterInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(4, _options, ActionNameEnum.SETVOTERULE, setVoteRuleInput);
       expect(serializeActionData).toHaveBeenNthCalledWith(5, _options, ActionNameEnum.SETEXECTYPE, setExecTypeInput);
-      expect(execCode).toBeCalledWith(CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE, codeActions, CodeTypeEnum.AMENDMENT, undefined);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.SET_RIGHT_HOLDER_FOR_CODE,
+        codeActions,
+        CodeTypeEnum.AMENDMENT,
+        undefined,
+        input.code_id,
+      );
     });
 
     it('should config for position', async () => {
@@ -1141,6 +1198,127 @@ describe('test CanCommunity', () => {
       await cif.appointPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.APPOINTPOS, input);
       expect(execCode).toBeCalledWith(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
+    });
+
+    it('should create new badge', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input: Createbadge = {
+        community_account: 'test-community',
+        badge_id: 999,
+        issue_type: 0,
+        badge_propose_name: 'createbadge',
+        issue_exec_type: 0,
+        issue_sole_right_accounts: ['daniel111111'],
+        issue_sole_right_pos_ids: [],
+        issue_proposer_right_accounts: [],
+        issue_proposer_right_pos_ids: [],
+        issue_approval_type: 0,
+        issue_approver_right_accounts: [],
+        issue_approver_right_pos_ids: [],
+        issue_voter_right_accounts: [],
+        issue_voter_right_pos_ids: [],
+        issue_pass_rule: 0,
+        issue_vote_duration: 0,
+      };
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.CREATEBADGE,
+          packed_params: packedParams,
+        },
+      ];
+
+      // @ts-ignore
+      await cif.createBadge(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CREATEBADGE, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.CREATE_BADGE, codeActions, CodeTypeEnum.NORMAL, undefined);
+    });
+
+    it('should config badge', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input: Configbadge = {
+        community_account: 'test-community',
+        badge_id: 999,
+        issue_type: 0,
+        update_badge_proposal_name: 'updatebadge',
+        issue_exec_type: 0,
+        issue_sole_right_accounts: ['daniel111111'],
+        issue_sole_right_pos_ids: [],
+        issue_proposer_right_accounts: [],
+        issue_proposer_right_pos_ids: [],
+        issue_approval_type: 0,
+        issue_approver_right_accounts: [],
+        issue_approver_right_pos_ids: [],
+        issue_voter_right_accounts: [],
+        issue_voter_right_pos_ids: [],
+        issue_pass_rule: 0,
+        issue_vote_duration: 0,
+      };
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.CONFIGBADGE,
+          packed_params: packedParams,
+        },
+      ];
+
+      // @ts-ignore
+      await cif.configBadge(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CONFIGBADGE, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE, undefined);
+    });
+
+    it('should issue badge', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const input: Issuebadge = {
+        community_account: 'test-community',
+        badge_propose_name: 'issuebadge',
+      };
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.ISSUEBADGE,
+          packed_params: packedParams,
+        },
+      ];
+
+      // @ts-ignore
+      await cif.issueBadge(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.ISSUEBADGE, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE, undefined);
     });
   });
 
