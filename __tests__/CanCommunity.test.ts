@@ -28,6 +28,7 @@ import { Appointpos } from '../src/smart-contract-types/Appointpos';
 import { Createbadge } from '../src/smart-contract-types/Createbadge';
 import { Configbadge } from '../src/smart-contract-types/Configbadge';
 import { Issuebadge } from '../src/smart-contract-types/Issuebadge';
+import { RightHolder } from '../src/smart-contract-types/RightHolder';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
@@ -719,13 +720,19 @@ describe('test CanCommunity', () => {
 
       const cif = new CanCommunity(_options, canPass);
 
+      const right_access: RightHolder = {
+        is_anyone: false,
+        is_any_community_member: false,
+        accounts: ['daniel111111', 'daniel221222'],
+        required_badges: [1, 2, 3],
+        required_tokens: ['100.0000 CAT'],
+        required_exp: 0,
+        required_positions: [99, 55, 33],
+      };
+
       const input = {
         community_account: 'test-community',
-        is_anyone: 0,
-        is_any_community_member: 0,
-        right_accounts: ['daniel111111', 'daniel221222'],
-        right_badge_ids: [1, 2, 3],
-        right_pos_ids: [99, 55, 33],
+        right_access,
       };
 
       const packedParams = faker.lorem.words();
@@ -743,7 +750,6 @@ describe('test CanCommunity', () => {
         },
       ];
 
-      // @ts-ignore
       await cif.setAccess(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETACCESS, input);
       expect(execCode).toBeCalledWith(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
@@ -807,7 +813,15 @@ describe('test CanCommunity', () => {
         code_id: 99,
         code_right_holder: {
           exec_type: 1,
-          sole_right_accounts: ['daniel111111'],
+          right_sole_executor: {
+            is_anyone: false,
+            is_any_community_member: false,
+            required_exp: 0,
+            required_badges: [],
+            required_tokens: [],
+            required_positions: [],
+            accounts: ['daniel111111'],
+          },
         },
       };
       const packedParams = faker.lorem.words();
@@ -822,8 +836,7 @@ describe('test CanCommunity', () => {
       const setSoleExecInput: Setsoleexec = {
         community_account: input.community_account,
         code_id: input.code_id,
-        right_accounts: input.code_right_holder.sole_right_accounts,
-        right_pos_ids: [],
+        right_sole_executor: input.code_right_holder.right_sole_executor,
         is_amend_code: false,
       };
 
@@ -868,7 +881,15 @@ describe('test CanCommunity', () => {
         code_id: 99,
         amendment_right_holder: {
           exec_type: 1,
-          sole_right_accounts: ['daniel111111'],
+          right_sole_executor: {
+            is_anyone: false,
+            is_any_community_member: false,
+            required_exp: 0,
+            required_badges: [],
+            required_tokens: [],
+            required_positions: [],
+            accounts: ['daniel111111'],
+          },
         },
       };
       const packedParams = faker.lorem.words();
@@ -883,8 +904,7 @@ describe('test CanCommunity', () => {
       const setSoleExecInput: Setsoleexec = {
         community_account: input.community_account,
         code_id: input.code_id,
-        right_accounts: input.amendment_right_holder.sole_right_accounts,
-        right_pos_ids: [],
+        right_sole_executor: input.amendment_right_holder.right_sole_executor,
         is_amend_code: true,
       };
 
@@ -930,8 +950,24 @@ describe('test CanCommunity', () => {
         code_right_holder: {
           exec_type: 1,
           approval_type: 1,
-          proposer_right_accounts: ['daniel111111'],
-          voter_right_accounts: ['daniel111111'],
+          right_proposer: {
+            is_anyone: false,
+            is_any_community_member: false,
+            required_exp: 0,
+            required_badges: [],
+            required_tokens: [],
+            required_positions: [],
+            accounts: ['daniel111111'],
+          },
+          right_voter: {
+            is_anyone: false,
+            is_any_community_member: false,
+            required_exp: 0,
+            required_badges: [],
+            required_tokens: [],
+            required_positions: [],
+            accounts: ['daniel111111'],
+          },
           pass_rule: 60,
           vote_duration: 600,
         },
@@ -955,16 +991,14 @@ describe('test CanCommunity', () => {
       const setProposerInput: Setproposer = {
         community_account: input.community_account,
         code_id: input.code_id,
-        right_accounts: input.code_right_holder.proposer_right_accounts,
-        right_pos_ids: [],
+        right_proposer: input.code_right_holder.right_proposer,
         is_amend_code: false,
       };
 
       const setVoterInput: Setvoter = {
         community_account: input.community_account,
         code_id: input.code_id,
-        right_accounts: input.code_right_holder.voter_right_accounts,
-        right_pos_ids: [],
+        right_voter: input.code_right_holder.right_voter,
         is_amend_code: false,
       };
 
@@ -1036,10 +1070,24 @@ describe('test CanCommunity', () => {
         term: 99,
         next_term_start_at: 1000,
         voting_period: 100,
-        pos_candidate_accounts: ['daniel111111'],
-        pos_voter_accounts: ['daniel111111'],
-        pos_candidate_positions: [11],
-        pos_voter_positions: [15],
+        right_candidate: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: ['daniel111111'],
+        },
+        right_voter: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: ['daniel111111'],
+        },
       };
       const packedParams = faker.lorem.words();
 
@@ -1076,11 +1124,25 @@ describe('test CanCommunity', () => {
         filled_through: 0,
         term: 0,
         next_term_start_at: 0,
+        right_candidate: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
+        right_voter: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
         voting_period: 0,
-        pos_candidate_accounts: [],
-        pos_voter_accounts: [],
-        pos_candidate_positions: [],
-        pos_voter_positions: [],
       };
       const packedParams = faker.lorem.words();
 
@@ -1212,15 +1274,43 @@ describe('test CanCommunity', () => {
         issue_type: 0,
         badge_propose_name: 'createbadge',
         issue_exec_type: 0,
-        issue_sole_right_accounts: ['daniel111111'],
-        issue_sole_right_pos_ids: [],
-        issue_proposer_right_accounts: [],
-        issue_proposer_right_pos_ids: [],
+        right_issue_sole_executor: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: ['daniel111111'],
+        },
+        right_issue_approver: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
         issue_approval_type: 0,
-        issue_approver_right_accounts: [],
-        issue_approver_right_pos_ids: [],
-        issue_voter_right_accounts: [],
-        issue_voter_right_pos_ids: [],
+        right_issue_proposer: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
+        right_issue_voter: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
         issue_pass_rule: 0,
         issue_vote_duration: 0,
       };
@@ -1257,15 +1347,43 @@ describe('test CanCommunity', () => {
         issue_type: 0,
         update_badge_proposal_name: 'updatebadge',
         issue_exec_type: 0,
-        issue_sole_right_accounts: ['daniel111111'],
-        issue_sole_right_pos_ids: [],
-        issue_proposer_right_accounts: [],
-        issue_proposer_right_pos_ids: [],
+        right_issue_sole_executor: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: ['daniel111111'],
+        },
+        right_issue_approver: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
         issue_approval_type: 0,
-        issue_approver_right_accounts: [],
-        issue_approver_right_pos_ids: [],
-        issue_voter_right_accounts: [],
-        issue_voter_right_pos_ids: [],
+        right_issue_proposer: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
+        right_issue_voter: {
+          is_anyone: false,
+          is_any_community_member: false,
+          required_exp: 0,
+          required_badges: [],
+          required_tokens: [],
+          required_positions: [],
+          accounts: [],
+        },
         issue_pass_rule: 0,
         issue_vote_duration: 0,
       };
