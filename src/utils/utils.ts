@@ -46,6 +46,7 @@ async function findCode(
       upper_bound: code_id,
       index_position: 2,
       key_type: 'i64',
+      limit: 1000,
     });
     res = codeTable?.rows[0];
   } else if (code_type === CodeTypeEnum.POSITION || code_type === CodeTypeEnum.BADGE) {
@@ -57,6 +58,7 @@ async function findCode(
       upper_bound: referenceId,
       index_position: 3,
       key_type: 'i64',
+      limit: 1000,
     });
     const listOfReferenceCodes = codeTable?.rows;
     if (listOfReferenceCodes.length) {
@@ -69,6 +71,7 @@ async function findCode(
       table: TableNameEnum.CODES,
       lower_bound: referenceId,
       upper_bound: referenceId,
+      limit: 1000,
     });
 
     res = codeTable?.rows[0];
