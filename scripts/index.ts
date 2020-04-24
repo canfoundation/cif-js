@@ -79,7 +79,7 @@ function printOutActions(actions) {
 function printOutTables(tables) {
   const enumFields = [];
   for (const { name } of tables) {
-    enumFields.push(`${_.upperCase(name)} = '${name}'`);
+    enumFields.push(`${_.toUpper(name.replace('.', '_'))} = '${name}'`);
   }
 
   fs.writeFileSync(

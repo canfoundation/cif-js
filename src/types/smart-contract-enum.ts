@@ -34,7 +34,10 @@ export enum VoteStatus {
 
 export enum CodeTypeEnum {
   NORMAL = 0,
+  POSITION_CONFIG,
+  POSITION_APPOINT,
+  POSITION_DISMISS,
+  BADGE_CONFIG,
+  BADGE_ISSUE,
   AMENDMENT,
-  POSITION,
-  BADGE,
 }

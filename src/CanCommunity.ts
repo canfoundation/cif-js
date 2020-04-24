@@ -157,7 +157,7 @@ export class CanCommunity {
   }
 
   async isAccessHolder(communityAccount: EosName, account: EosName) {
-    const accessionTable = await this.query(TableNameEnum.ACCESSION, {
+    const accessionTable = await this.query(TableNameEnum.V1_ACCESS, {
       scope: communityAccount,
     });
 
@@ -177,7 +177,7 @@ export class CanCommunity {
       let codeExecRule;
       if (isAmendCode) {
         // if it is amendment action, get right holder from amenexecrule table
-        const amendExecRuleTable = await this.query(TableNameEnum.AMENEXECRULE, {
+        const amendExecRuleTable = await this.query(TableNameEnum.V1_AMENEXEC, {
           lower_bound: codeId,
           upper_bound: codeId,
         });
@@ -187,7 +187,7 @@ export class CanCommunity {
         codeExecRule = amendExecRuleTable.rows[0];
       } else {
         // if it is normal action, get right holder from codeexecrule table
-        const codeExecRuleTable = await this.query(TableNameEnum.CODEEXECRULE, {
+        const codeExecRuleTable = await this.query(TableNameEnum.V1_CODEEXEC, {
           lower_bound: codeId,
           upper_bound: codeId,
         });
@@ -201,7 +201,7 @@ export class CanCommunity {
       let codeVoteRule;
       if (isAmendCode) {
         // if it is amendment code, get right holder from amenvoterule table
-        const amendVoteRuleTable = await this.query(TableNameEnum.AMENVOTERULE, {
+        const amendVoteRuleTable = await this.query(TableNameEnum.V1_AMENVOTE, {
           lower_bound: 1,
           upper_bound: 1,
         });
@@ -211,7 +211,7 @@ export class CanCommunity {
         codeVoteRule = amendVoteRuleTable.rows[0];
       } else {
         // if it is amendment code, get right holder from codevoterule table
-        const codeVoteRuleTable = await this.query(TableNameEnum.CODEVOTERULE, {
+        const codeVoteRuleTable = await this.query(TableNameEnum.V1_CODEVOTE, {
           lower_bound: 1,
           upper_bound: 1,
         });
@@ -227,12 +227,17 @@ export class CanCommunity {
   }
 
   async checkRightHolder(rightHolder: RightHolder, account: EosName) {
-    // check right holder is set or not
+    // if anyone can exec the code, return true
+    if (rightHolder.is_anyone) {
+      return true;
+    }
+
     // TODO check the case that is_any_community_member
     if (rightHolder.is_any_community_member || rightHolder.is_anyone) {
       return true;
     }
 
+    // check right holder is set or not
     const isSetRightHolder =
       rightHolder.accounts.length > 0 ||
       rightHolder.required_badges.length > 0 ||
@@ -252,17 +257,20 @@ export class CanCommunity {
     // check user badge satisfy require badges
     if (rightHolder.required_badges.length > 0) {
       // get all user badges
-      const userBadgeTable = await this.query('cbadges', {
+      const userBadgeTable = await this.query(TableNameEnum.V1_CERT, {
         scope: account,
         code: this.config.cryptoBadgeContractAccount,
-        limit: 500,
+        index_position: 2,
+        key_type: 'i64',
+        upper_bound: Math.max(...rightHolder.required_badges),
+        lower_bound: Math.min(...rightHolder.required_badges),
       });
 
       const userBadges = userBadgeTable.rows;
 
-      const userBadgeIds = userBadges.map(badge => badge.badgeid);
+      const userBadgeIds = userBadges.map(badge => badge.badge_id);
 
-      // check that user have all required badges
+      // check that user have one of required badges
       for (const id of rightHolder.required_badges) {
         if (userBadgeIds.includes(id)) {
           return true;
@@ -273,7 +281,7 @@ export class CanCommunity {
     // check user position statify require positions
     if (rightHolder.required_positions.length > 0) {
       // get all positions of community that relative to required_positions
-      const positionTable = await this.query(TableNameEnum.POSITIONS, {
+      const positionTable = await this.query(TableNameEnum.V1_POSITION, {
         upper_bound: Math.max(...rightHolder.required_positions),
         lower_bound: Math.min(...rightHolder.required_positions),
       });
@@ -295,18 +303,19 @@ export class CanCommunity {
 
   /**
    * Create a new community
-   * @param input
-   * @param initialCAT example '10.0000 CAT'
+   * @param input: create community input
+   * @param initialCAT: init token transfer to governance to create community account, example '10.0000 CAT'
+   * @param payer: payer for creating community
    */
-  createCommunity(input: Create, initialCAT: Asset) {
+  createCommunity(input: Create, initialCAT: Asset, payer?: EosName) {
     const trx = {
       actions: [
         {
           account: 'eosio.token',
           authorization: [{ actor: input.creator, permission: 'active' }],
           data: {
-            from: input.creator,
-            memo: input.community_account,
+            from: payer ? payer : input.creator,
+            memo: payer ? `${input.community_account}-${input.creator}` : input.community_account,
             quantity: initialCAT,
             to: this.config.code,
           },
@@ -507,7 +516,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
+    return this.execCode(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION_CONFIG, execCodeInput, input.pos_id);
   }
 
   async dismissPosition(input: Dismisspos, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -520,7 +529,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.DISMISS_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
+    return this.execCode(CODE_IDS.DISMISS_POSITION, codeActions, CodeTypeEnum.POSITION_DISMISS, execCodeInput, input.pos_id);
   }
 
   async approvePosition(input: Approvepos, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -533,7 +542,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
+    return this.execCode(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.NORMAL, execCodeInput, input.pos_id);
   }
 
   async appointPosition(input: Appointpos, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -546,7 +555,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION, execCodeInput, input.pos_id);
+    return this.execCode(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION_APPOINT, execCodeInput, input.pos_id);
   }
 
   voteForCode(input: Voteforcode) {
@@ -600,7 +609,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE, execCodeInput);
+    return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, execCodeInput);
   }
 
   async issueBadge(input: Issuebadge, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -613,7 +622,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE, execCodeInput);
+    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput);
   }
 
   execProposal(input: Execproposal) {

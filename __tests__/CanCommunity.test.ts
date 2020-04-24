@@ -250,7 +250,7 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isAccessHolder(commumityAccount, account);
       expect(res).toBe(true);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_ACCESS, { scope: commumityAccount });
     });
 
     it('should return false if right holder is not set', async () => {
@@ -281,7 +281,7 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isAccessHolder(commumityAccount, account);
       expect(res).toBe(false);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_ACCESS, { scope: commumityAccount });
     });
 
     it('should return true if user account is includes in right accounts', async () => {
@@ -312,7 +312,7 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isAccessHolder(commumityAccount, account);
       expect(res).toBe(true);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.ACCESSION, { scope: commumityAccount });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_ACCESS, { scope: commumityAccount });
     });
   });
 
@@ -346,7 +346,39 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
       expect(res).toBe(false);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.CODEEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+    });
+
+    it('should return true if right holder is any one', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 0,
+            right_executor: {
+              is_anyone: 1,
+              is_any_community_member: 0,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
+      expect(res).toBe(true);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
     });
 
     it('should return false if user account is not includes in right accounts', async () => {
@@ -378,7 +410,7 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(false);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
     });
 
     it('should return true if user account is includes in right accounts', async () => {
@@ -410,7 +442,7 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(true);
-      expect(mockQuery).toBeCalledWith(TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
     });
 
     it('should return false if user does not satisfy position requirement', async () => {
@@ -469,8 +501,8 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(false);
-      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
-      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.POSITIONS, { lower_bound: 1, upper_bound: 1 });
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_POSITION, { lower_bound: 1, upper_bound: 1 });
     });
 
     it('should return true if user satisfy position requirement', async () => {
@@ -529,8 +561,8 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(true);
-      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
-      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.POSITIONS, { lower_bound: 1, upper_bound: 1 });
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_POSITION, { lower_bound: 1, upper_bound: 1 });
     });
 
     it('should return false if user does not satisfy badges requirement', async () => {
@@ -563,11 +595,11 @@ describe('test CanCommunity', () => {
       mockQuery.mockResolvedValueOnce({
         rows: [
           {
-            badgeid: 11,
+            badge_id: 11,
             issuer: '1cryptobadge',
           },
           {
-            badgeid: 22,
+            badge_id: 22,
             issuer: '1cryptobadge',
           },
         ],
@@ -575,11 +607,14 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(false);
-      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
-      expect(mockQuery).toHaveBeenNthCalledWith(2, 'cbadges', {
-        limit: 500,
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_CERT, {
         scope: account,
         code: _options.cryptoBadgeContractAccount,
+        index_position: 2,
+        key_type: 'i64',
+        lower_bound: 10,
+        upper_bound: 99,
       });
     });
 
@@ -613,11 +648,11 @@ describe('test CanCommunity', () => {
       mockQuery.mockResolvedValueOnce({
         rows: [
           {
-            badgeid: 10,
+            badge_id: 10,
             issuer: '1cryptobadge',
           },
           {
-            badgeid: 99,
+            badge_id: 99,
             issuer: '1cryptobadge',
           },
         ],
@@ -625,11 +660,14 @@ describe('test CanCommunity', () => {
 
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'configCode');
       expect(res).toBe(true);
-      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.AMENEXECRULE, { lower_bound: codeId, upper_bound: codeId });
-      expect(mockQuery).toHaveBeenNthCalledWith(2, 'cbadges', {
-        limit: 500,
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_AMENEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_CERT, {
         scope: account,
         code: _options.cryptoBadgeContractAccount,
+        index_position: 2,
+        key_type: 'i64',
+        lower_bound: 10,
+        upper_bound: 99,
       });
     });
   });
@@ -1100,7 +1138,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.configurePosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CONFIGPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, 999);
+      expect(execCode).toBeCalledWith(CODE_IDS.CONFIGURE_POSITION, codeActions, CodeTypeEnum.POSITION_CONFIG, undefined, 999);
     });
 
     it('should createPosition', async () => {
@@ -1188,7 +1226,13 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.dismissPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.DISMISSPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.DISMISS_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.DISMISS_POSITION,
+        codeActions,
+        CodeTypeEnum.POSITION_DISMISS,
+        undefined,
+        input.pos_id,
+      );
     });
 
     it('should approvePosition', async () => {
@@ -1219,7 +1263,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.approvePosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.APPROVEPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
+      expect(execCode).toBeCalledWith(CODE_IDS.APPROVE_POSITION, codeActions, CodeTypeEnum.NORMAL, undefined, input.pos_id);
     });
 
     it('should appointPosition', async () => {
@@ -1252,7 +1296,13 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.appointPosition(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.APPOINTPOS, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.APPOINT_POSITION, codeActions, CodeTypeEnum.POSITION, undefined, input.pos_id);
+      expect(execCode).toBeCalledWith(
+        CODE_IDS.APPOINT_POSITION,
+        codeActions,
+        CodeTypeEnum.POSITION_APPOINT,
+        undefined,
+        input.pos_id,
+      );
     });
 
     it('should create new badge', async () => {
@@ -1263,7 +1313,6 @@ describe('test CanCommunity', () => {
 
       const input: Createbadge = {
         community_account: 'test-community',
-        badge_id: 999,
         issue_type: 0,
         badge_propose_name: 'createbadge',
         issue_exec_type: 0,
@@ -1398,7 +1447,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.configBadge(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CONFIGBADGE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, undefined);
     });
 
     it('should issue badge', async () => {
@@ -1429,7 +1478,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.issueBadge(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.ISSUEBADGE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, undefined);
     });
   });
 
@@ -1548,7 +1597,7 @@ describe('test CanCommunity', () => {
       _options.signOption.userId = faker.random.uuid();
 
       const cif = new CanCommunity(_options, canPass);
-      const table = TableNameEnum.CODES;
+      const table = TableNameEnum.V1_CODE;
 
       const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');
       get_table_rows.mockResolvedValue(tableCodes);
@@ -1567,7 +1616,7 @@ describe('test CanCommunity', () => {
       _options.signOption.userId = faker.random.uuid();
 
       const cif = new CanCommunity(_options, canPass);
-      const table = TableNameEnum.CODES;
+      const table = TableNameEnum.V1_CODE;
 
       const fakeRes = {
         more: false,
