@@ -62,11 +62,6 @@ describe('test CanCommunity', () => {
       spySignTx.mockRestore();
     });
 
-    it('missing of signOption', async () => {
-      const trx = {};
-      expect(() => cif.signTrx(trx)).toThrow('missing `userId` in `signOption`');
-    });
-
     it('has signOption with CAN_PASS as method', async () => {
       const spySignTrx = jest.spyOn(cif, 'signTrx');
       const trx = {};
@@ -75,9 +70,10 @@ describe('test CanCommunity', () => {
         userId: faker.random.uuid(),
         signTrxMethod: SIGN_TRX_METHOD.CAN_PASS,
       };
-      expect(() => cif.signTrx(trx, signOption)).not.toThrow('missing `userId` in `signOption`');
+      const rs = cif.signTrx(trx, signOption);
       expect(spySignTrx).toBeCalledWith(trx, signOption);
-      expect(spySignTx).toBeCalledWith(trx, signOption.userId, options.userName);
+      expect(spySignTx).toBeCalledWith(trx);
+      expect(rs).toEqual(undefined);
     });
 
     it('has signOption with MANUAL as method', async () => {
@@ -89,8 +85,7 @@ describe('test CanCommunity', () => {
         signTrxMethod: SIGN_TRX_METHOD.MANUAL,
       };
 
-      let rs;
-      expect(() => (rs = cif.signTrx(trx, signOption))).not.toThrow('missing `userId` in `signOption`');
+      const rs = cif.signTrx(trx, signOption);
       expect(spySignTrx).toBeCalledWith(trx, signOption);
       expect(spySignTx).not.toBeCalled();
       expect(rs).toEqual(trx);
@@ -117,13 +112,11 @@ describe('test CanCommunity', () => {
         },
       ];
 
-      await expect(cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL)).rejects.toThrow('missing `userId` in `signOption`');
+      await expect(cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL));
       spyFindCode.mockResolvedValue({
         exec_type: EXECUTION_TYPE.SOLE_DECISION,
         code_id: faker.random.number(),
       });
-
-      await expect(cif.execCode(code_id, codeActions, CodeTypeEnum.NORMAL)).rejects.toThrow('missing `userId` in `signOption`');
     });
 
     describe('no default param, but has userId', () => {

@@ -80,11 +80,7 @@ export class CanCommunity {
         return trx;
       case SIGN_TRX_METHOD.CAN_PASS:
       default:
-        if (!signOption.userId) {
-          logger.error('missing `userId` in `signOption`', signOption);
-          throw new Error('missing `userId` in `signOption`');
-        }
-        return this.canPass.signTx(trx, signOption.userId, this.config.userName);
+        return this.canPass.signTx(trx);
     }
   }
 

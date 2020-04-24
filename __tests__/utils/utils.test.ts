@@ -34,6 +34,7 @@ describe('test some utility functions', () => {
       upper_bound: 'po.create',
       index_position: 2,
       key_type: 'i64',
+      limit: 1000,
     });
     expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(1);
@@ -76,6 +77,7 @@ describe('test some utility functions', () => {
       upper_bound: 99,
       index_position: 3,
       key_type: 'i64',
+      limit: 1000,
     });
     expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(11);
