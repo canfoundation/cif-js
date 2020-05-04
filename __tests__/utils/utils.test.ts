@@ -72,7 +72,7 @@ describe('test some utility functions', () => {
       lower_bound: utils.buildReferenceId(99, CodeTypeEnum.POSITION_CONFIG),
       upper_bound: utils.buildReferenceId(99, CodeTypeEnum.POSITION_CONFIG),
       index_position: 3,
-      key_type: 'i64',
+      key_type: 'i128',
     });
     expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(11);
@@ -82,10 +82,10 @@ describe('test some utility functions', () => {
   it('should build reference id', async () => {
     const referenceId = 111;
     const codeType = CodeTypeEnum.BADGE_CONFIG;
-    const expectedReferenceId = BigInt(2047588592181760229380);
-    const res: bigint = utils.buildReferenceId(referenceId, codeType);
+    const expectedReferenceId = '2047588592181760229380';
+    const res = utils.buildReferenceId(referenceId, codeType);
 
-    expect(Number(res)).toBe(Number(expectedReferenceId));
+    expect(res).toBe(expectedReferenceId);
   });
 
   it('should make a random number', async () => {

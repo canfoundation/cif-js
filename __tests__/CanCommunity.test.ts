@@ -29,6 +29,7 @@ import { Createbadge } from '../src/smart-contract-types/Createbadge';
 import { Configbadge } from '../src/smart-contract-types/Configbadge';
 import { Issuebadge } from '../src/smart-contract-types/Issuebadge';
 import { RightHolder } from '../src/smart-contract-types/RightHolder';
+import { Inputmembers } from '../src/smart-contract-types/Inputmembers';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
@@ -784,6 +785,40 @@ describe('test CanCommunity', () => {
       await cif.setAccess(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.SETACCESS, input);
       expect(execCode).toBeCalledWith(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
+    });
+
+    it('should input commuity member', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const cif = new CanCommunity(_options, canPass);
+
+      const addedMember = ['member111111', 'member111112', 'member111113'];
+
+      const input: Inputmembers = {
+        community_account: 'test-community',
+        added_members: addedMember,
+        removed_members: [],
+      };
+
+      const packedParams = faker.lorem.words();
+
+      const execCode = jest.spyOn(cif, 'execCode');
+      execCode.mockResolvedValue({});
+
+      const serializeActionData = jest.spyOn(actions, 'serializeActionData');
+      serializeActionData.mockResolvedValue(packedParams);
+
+      const codeActions: ExecutionCodeData[] = [
+        {
+          code_action: ActionNameEnum.INPUTMEMBERS,
+          packed_params: packedParams,
+        },
+      ];
+
+      await cif.inputCommunityMember(input);
+      expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.INPUTMEMBERS, input);
+      expect(execCode).toBeCalledWith(CODE_IDS.MEMBER_CODE, codeActions, CodeTypeEnum.NORMAL, undefined);
     });
 
     it('should set code execution type using configCode', async () => {

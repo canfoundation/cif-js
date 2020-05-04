@@ -64,7 +64,7 @@ async function findCode(
         lower_bound: buildReferenceId(referenceId, code_type),
         upper_bound: buildReferenceId(referenceId, code_type),
         index_position: 3,
-        key_type: 'i64',
+        key_type: 'i128',
       });
       res = codeTable?.rows[0];
       break;
@@ -85,10 +85,11 @@ async function findCode(
   return res;
 }
 
-function buildReferenceId(itemId: number, codeType: CodeTypeEnum): bigint {
+function buildReferenceId(itemId: number, codeType: CodeTypeEnum): string {
   // C++ static_cast<uint128_t>(type)  | static_cast<uint128_t>(reference_id) << 64;
   // build id to get code by reference id and code type
-  return (BigInt(itemId) << BigInt(64)) | BigInt(codeType);
+  const resBigInt = (BigInt(itemId) << BigInt(64)) | BigInt(codeType);
+  return resBigInt.toString();
 }
 
 function randomNumberInRange(min: number, max: number): number {

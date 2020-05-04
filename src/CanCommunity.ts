@@ -47,6 +47,7 @@ import {
 } from './utils/inputBuilder';
 import { Configbadge } from './smart-contract-types/Configbadge';
 import { Issuebadge } from './smart-contract-types/Issuebadge';
+import { Inputmembers } from './smart-contract-types/Inputmembers';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -339,6 +340,19 @@ export class CanCommunity {
     ];
 
     return this.execCode(CODE_IDS.ACCESS_CODE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
+  }
+
+  async inputCommunityMember(input: Inputmembers, execCodeInput?: ExecCodeInput): Promise<any> {
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.INPUTMEMBERS, input);
+
+    const codeActions: ExecutionCodeData[] = [
+      {
+        code_action: ActionNameEnum.INPUTMEMBERS,
+        packed_params: packedParams,
+      },
+    ];
+
+    return this.execCode(CODE_IDS.MEMBER_CODE, codeActions, CodeTypeEnum.NORMAL, execCodeInput);
   }
 
   async createConfigCodeActionInput(
