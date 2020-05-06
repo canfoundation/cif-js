@@ -10,6 +10,7 @@
     "no-var-requires": false,
     "no-empty": false,
     "variable-name": false,
+    "no-bitwise": false,
     "ban": [
       true,
       "eval",

@@ -37,49 +37,59 @@ async function findCode(
   referenceId?: number,
 ): Promise<any> {
   let res;
-  if (code_type === CodeTypeEnum.NORMAL) {
-    const codeTable = await app.rpc.get_table_rows({
-      code,
-      scope: community_account,
-      table: TableNameEnum.CODES,
-      lower_bound: code_id,
-      upper_bound: code_id,
-      index_position: 2,
-      key_type: 'i64',
-      limit: 1000,
-    });
-    res = codeTable?.rows[0];
-  } else if (code_type === CodeTypeEnum.POSITION || code_type === CodeTypeEnum.BADGE) {
-    const codeTable = await app.rpc.get_table_rows({
-      code,
-      scope: community_account,
-      table: TableNameEnum.CODES,
-      lower_bound: referenceId,
-      upper_bound: referenceId,
-      index_position: 3,
-      key_type: 'i64',
-      limit: 1000,
-    });
-    const listOfReferenceCodes = codeTable?.rows;
-    if (listOfReferenceCodes.length) {
-      res = listOfReferenceCodes.find(c => c.code_name === code_id);
-    }
-  } else if (code_type === CodeTypeEnum.AMENDMENT) {
-    const codeTable = await app.rpc.get_table_rows({
-      code,
-      scope: community_account,
-      table: TableNameEnum.CODES,
-      lower_bound: referenceId,
-      upper_bound: referenceId,
-      limit: 1000,
-    });
+  let codeTable;
 
-    res = codeTable?.rows[0];
+  switch (code_type) {
+    case CodeTypeEnum.NORMAL:
+      codeTable = await app.rpc.get_table_rows({
+        code,
+        scope: community_account,
+        table: TableNameEnum.V1_CODE,
+        lower_bound: code_id,
+        upper_bound: code_id,
+        index_position: 2,
+        key_type: 'i64',
+      });
+      res = codeTable?.rows[0];
+      break;
+    case CodeTypeEnum.POSITION_APPOINT:
+    case CodeTypeEnum.POSITION_DISMISS:
+    case CodeTypeEnum.POSITION_CONFIG:
+    case CodeTypeEnum.BADGE_ISSUE:
+    case CodeTypeEnum.BADGE_CONFIG:
+      codeTable = await app.rpc.get_table_rows({
+        code,
+        scope: community_account,
+        table: TableNameEnum.V1_CODE,
+        lower_bound: buildReferenceId(referenceId, code_type),
+        upper_bound: buildReferenceId(referenceId, code_type),
+        index_position: 3,
+        key_type: 'i128',
+      });
+      res = codeTable?.rows[0];
+      break;
+    case CodeTypeEnum.AMENDMENT:
+      codeTable = await app.rpc.get_table_rows({
+        code,
+        scope: community_account,
+        table: TableNameEnum.V1_CODE,
+        lower_bound: referenceId,
+        upper_bound: referenceId,
+      });
+
+      res = codeTable?.rows[0];
   }
 
   logger.debug('---- getCodeId - get_table_rows', JSON.stringify(res));
 
   return res;
+}
+
+function buildReferenceId(itemId: number, codeType: CodeTypeEnum): string {
+  // C++ static_cast<uint128_t>(type)  | static_cast<uint128_t>(reference_id) << 64;
+  // build id to get code by reference id and code type
+  const resBigInt = (BigInt(itemId) << BigInt(64)) | BigInt(codeType);
+  return resBigInt.toString();
 }
 
 function randomNumberInRange(min: number, max: number): number {
@@ -104,4 +114,5 @@ export default {
   findCode,
   randomEosName,
   randomNumberInRange,
+  buildReferenceId,
 };

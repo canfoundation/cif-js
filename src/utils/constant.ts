@@ -12,6 +12,7 @@ export enum EXECUTION_TYPE {
 export enum CODE_IDS {
   CREATE_CODE = 'co.amend',
   ACCESS_CODE = 'co.access',
+  MEMBER_CODE = 'co.members',
   SET_RIGHT_HOLDER_FOR_CODE = 'co.amend',
   SET_COLLECTION_RULE_FOR_CODE = 'co.amend',
   CREATE_POSITION = 'po.create',

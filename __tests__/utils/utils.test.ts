@@ -29,12 +29,11 @@ describe('test some utility functions', () => {
     expect(get_table_rows).toBeCalledWith({
       code: process.env.app__can_governance_account,
       scope: 'community242',
-      table: 'codes',
+      table: 'v1.code',
       lower_bound: 'po.create',
       upper_bound: 'po.create',
       index_position: 2,
       key_type: 'i64',
-      limit: 1000,
     });
     expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(1);
@@ -55,33 +54,38 @@ describe('test some utility functions', () => {
           amendment_exec_type: 0,
           code_type: { type: 1, refer_id: 99 },
         },
-        {
-          code_id: 12,
-          code_name: 'po.appoint',
-          contract_name: process.env.app__can_governance_account,
-          code_actions: ['appointpos'],
-          code_exec_type: 1,
-          amendment_exec_type: 0,
-          code_type: { type: 1, refer_id: 99 },
-        },
       ],
       more: false,
     });
 
-    const code = await utils.findCode(options.code, 'community242', CODE_IDS.CONFIGURE_POSITION, CodeTypeEnum.POSITION, 99);
+    const code = await utils.findCode(
+      options.code,
+      'community242',
+      CODE_IDS.CONFIGURE_POSITION,
+      CodeTypeEnum.POSITION_CONFIG,
+      99,
+    );
     expect(get_table_rows).toBeCalledWith({
       code: process.env.app__can_governance_account,
       scope: 'community242',
-      table: 'codes',
-      lower_bound: 99,
-      upper_bound: 99,
+      table: 'v1.code',
+      lower_bound: utils.buildReferenceId(99, CodeTypeEnum.POSITION_CONFIG),
+      upper_bound: utils.buildReferenceId(99, CodeTypeEnum.POSITION_CONFIG),
       index_position: 3,
-      key_type: 'i64',
-      limit: 1000,
+      key_type: 'i128',
     });
     expect(get_table_rows).toBeCalledTimes(1);
     expect(code.code_id).toEqual(11);
     expect(code.code_name).toEqual(CODE_IDS.CONFIGURE_POSITION);
+  });
+
+  it('should build reference id', async () => {
+    const referenceId = 111;
+    const codeType = CodeTypeEnum.BADGE_CONFIG;
+    const expectedReferenceId = '2047588592181760229380';
+    const res = utils.buildReferenceId(referenceId, codeType);
+
+    expect(res).toBe(expectedReferenceId);
   });
 
   it('should make a random number', async () => {
