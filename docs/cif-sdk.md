@@ -692,13 +692,11 @@ const result = await canCommunity.query(table, queryOption);
 
 <a name="canCommunity.getCommunityMember"></a>
 
-- [get members of community table](#canCommunity.getCommunityMember)
+### get members of community table
 
-### get access to code in force table
-
-| Table     | Scope                  | Index           |
-| --------- | ---------------------- | --------------- |
-| v1.member | community account name | singleton table |
+| Table     | Scope                  |
+| --------- | ---------------------- |
+| v1.member | community account name |
 
 ```js
 const table = 'v1.member';
