@@ -633,12 +633,12 @@ const result = canCommunity.inputCommunityMember(input);
 
 ### get list of all community information
 
-| Table     | Scope                    | Index   |
-| --------- | ------------------------ | ------- |
-| community | Governance contract name | primary |
+| Table        | Scope                    | Index   |
+| ------------ | ------------------------ | ------- |
+| v1.community | Governance contract name | primary |
 
 ```js
-const table = 'community';
+const table = 'v1.community';
 const queryOption = {
   scope: 'governance24',
 };
@@ -651,14 +651,14 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get community information by community account
 
-| Table     | Scope                    | Index   |
-| --------- | ------------------------ | ------- |
-| community | Governance contract name | primary |
+| Table        | Scope                    | Index   |
+| ------------ | ------------------------ | ------- |
+| v1.community | Governance contract name | primary |
 
 ```js
-const table = 'community';
+const table = 'v1.community';
 const queryOption = {
-  scope: 'governance24',
+  scope: 'governance2',
   lower_bound: 'community251',
   upper_bound: 'community251',
 };
@@ -671,12 +671,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get community information by creator
 
-| Table     | Scope                    | Index                        |
-| --------- | ------------------------ | ---------------------------- |
-| community | Governance contract name | secondary index (by.creator) |
+| Table        | Scope                    | Index                        |
+| ------------ | ------------------------ | ---------------------------- |
+| v1.community | Governance contract name | secondary index (by.creator) |
 
 ```js
-const table = 'community';
+const table = 'v1.community';
 const queryOption = {
   scope: 'governance24',
   lower_bound: 'creator.can',
@@ -716,12 +716,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of code of community
 
-| Table | Scope             | Index   |
-| ----- | ----------------- | ------- |
-| codes | community account | primary |
+| Table   | Scope             | Index   |
+| ------- | ----------------- | ------- |
+| v1.code | community account | primary |
 
 ```js
-const table = 'codes';
+const table = 'v1.code';
 const queryOption = {
   scope: 'community234',
 };
@@ -735,12 +735,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get code by code id
 
-| Table | Scope             | Index   |
-| ----- | ----------------- | ------- |
-| codes | community account | primary |
+| Table   | Scope             | Index   |
+| ------- | ----------------- | ------- |
+| v1.code | community account | primary |
 
 ```js
-const table = 'codes';
+const table = 'v1.code';
 const queryOption = {
   scope: 'community234',
   lower_bound: 1,
@@ -756,12 +756,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get code by code name
 
-| Table | Scope             | Index                                      |
-| ----- | ----------------- | ------------------------------------------ |
-| codes | community account | secondary (by.code.name), index position 2 |
+| Table   | Scope             | Index                                      |
+| ------- | ----------------- | ------------------------------------------ |
+| v1.code | community account | secondary (by.code.name), index position 2 |
 
 ```js
-const table = 'codes';
+const table = 'v1.code';
 const queryOption = {
   scope: 'community234',
   lower_bound: 'po.create',
@@ -779,12 +779,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of code by reference id
 
-| Table | Scope             | Index                                     |
-| ----- | ----------------- | ----------------------------------------- |
-| codes | community account | secondary (by.refer.id), index position 3 |
+| Table   | Scope             | Index                                     |
+| ------- | ----------------- | ----------------------------------------- |
+| v1.code | community account | secondary (by.refer.id), index position 3 |
 
 ```js
-const table = 'codes';
+const table = 'v1.code';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // reference id
@@ -801,12 +801,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get sole decision of code
 
-| Table        | Scope             | Index   |
-| ------------ | ----------------- | ------- |
-| codeexecrule | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.codeexec | community account | primary |
 
 ```js
-const table = 'codeexecrule';
+const table = 'v1.codeexec';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // code id
@@ -822,12 +822,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get collective decision of code
 
-| Table        | Scope             | Index   |
-| ------------ | ----------------- | ------- |
-| codevoterule | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.codevote | community account | primary |
 
 ```js
-const table = 'codevoterule';
+const table = 'v1.codevote';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // code id
@@ -843,12 +843,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get sole decision of amendment code
 
-| Table        | Scope             | Index   |
-| ------------ | ----------------- | ------- |
-| amenexecrule | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.amenexec | community account | primary |
 
 ```js
-const table = 'amenexecrule';
+const table = 'v1.amenexec';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // code id
@@ -864,12 +864,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get collective decision of amendment code
 
-| Table        | Scope             | Index   |
-| ------------ | ----------------- | ------- |
-| amenvoterule | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.amenvote | community account | primary |
 
 ```js
-const table = 'amenvoterule';
+const table = 'v1.amenvote';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // code id
@@ -885,12 +885,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of code proposal by code id
 
-| Table       | Scope             | Index                                    |
-| ----------- | ----------------- | ---------------------------------------- |
-| coproposals | community account | secondary (by.code.id), index position 3 |
+| Table        | Scope             | Index                                    |
+| ------------ | ----------------- | ---------------------------------------- |
+| v1.cproposal | community account | secondary (by.code.id), index position 3 |
 
 ```js
-const table = 'coproposals';
+const table = 'v1.cproposal';
 const queryOption = {
   scope: 'community234',
   lower_bound: 11, // code id
@@ -908,12 +908,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of code proposal by proposer
 
-| Table       | Scope             | Index                                     |
-| ----------- | ----------------- | ----------------------------------------- |
-| coproposals | community account | secondary (by.proposer), index position 2 |
+| Table        | Scope             | Index                                     |
+| ------------ | ----------------- | ----------------------------------------- |
+| v1.cproposal | community account | secondary (by.proposer), index position 2 |
 
 ```js
-const table = 'coproposals';
+const table = 'v1.cproposal';
 const queryOption = {
   scope: 'community234',
   lower_bound: 'daniel111111', // proposer name
@@ -931,12 +931,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get code proposal by proposal name
 
-| Table       | Scope             | Index   |
-| ----------- | ----------------- | ------- |
-| coproposals | community account | primary |
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| v1.cproposal | community account | primary |
 
 ```js
-const table = 'coproposals';
+const table = 'v1.cproposal';
 const queryOption = {
   scope: 'community234',
   lower_bound: 'proposal1', // proposal name
@@ -952,12 +952,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of positions of community
 
-| Table     | Scope             | Index   |
-| --------- | ----------------- | ------- |
-| positions | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.position | community account | primary |
 
 ```js
-const table = 'positions';
+const table = 'v1.position';
 const queryOption = {
   scope: 'community234',
 };
@@ -971,12 +971,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get position by position id
 
-| Table     | Scope             | Index   |
-| --------- | ----------------- | ------- |
-| positions | community account | primary |
+| Table       | Scope             | Index   |
+| ----------- | ----------------- | ------- |
+| v1.position | community account | primary |
 
 ```js
-const table = 'positions';
+const table = 'v1.position';
 const queryOption = {
   scope: 'community234',
   lower_bound: 1, // position id
@@ -992,12 +992,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get list of codes of position by position id
 
-| Table | Scope             | Index                                     |
-| ----- | ----------------- | ----------------------------------------- |
-| codes | community account | secondary (by.refer.id), index position 3 |
+| Table   | Scope             | Index                                     |
+| ------- | ----------------- | ----------------------------------------- |
+| v1.code | community account | secondary (by.refer.id), index position 3 |
 
 ```js
-const table = 'codes';
+const table = 'v1.code';
 const queryOption = {
   scope: 'community234',
   lower_bound: 1, // position id
@@ -1015,12 +1015,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get filling rule of position
 
-| Table       | Scope             | Index   |
-| ----------- | ----------------- | ------- |
-| fillingrule | community account | primary |
+| Table      | Scope             | Index   |
+| ---------- | ----------------- | ------- |
+| v1.filling | community account | primary |
 
 ```js
-const table = 'fillingrule';
+const table = 'v1.filling';
 const queryOption = {
   scope: 'community234',
   lower_bound: 1, // position id
@@ -1036,12 +1036,12 @@ const result = await canCommunity.query(table, queryOption);
 
 ### get proposal of position
 
-| Table       | Scope             | Index   |
-| ----------- | ----------------- | ------- |
-| posproposal | community account | primary |
+| Table        | Scope             | Index   |
+| ------------ | ----------------- | ------- |
+| v1.pproposal | community account | primary |
 
 ```js
-const table = 'posproposal';
+const table = 'v1.pproposal';
 const queryOption = {
   scope: 'community234',
   lower_bound: 1, // position id
@@ -1059,10 +1059,10 @@ const result = await canCommunity.query(table, queryOption);
 
 | Table        | Scope                                       | Index   |
 | ------------ | ------------------------------------------- | ------- |
-| poscandidate | pos_proposal_id define in posproposal table | primary |
+| v1.candidate | pos_proposal_id define in posproposal table | primary |
 
 ```js
-const table = 'poscandidate';
+const table = 'v1.candidate';
 const queryOption = {
   scope: 1, // pos_proposal_id
 };
@@ -1080,10 +1080,10 @@ const result = await canCommunity.query(table, queryOption);
 
 | Table     | Scope                  | Index           |
 | --------- | ---------------------- | --------------- |
-| accession | community account name | singleton table |
+| v1.access | community account name | singleton table |
 
 ```js
-const table = 'accession';
+const table = 'v1.access';
 const queryOption = {
   scope: 'community234', // pos_proposal_id
 };
