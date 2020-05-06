@@ -18,6 +18,7 @@
   - [.voteForPosition(input: object)](#canCommunity.voteForPosition)
   - [.appointPosition(input: object)](#canCommunity.appointPosition)
   - [.dismissPosition(input: object)](#canCommunity.dismissPosition)
+  - [.inputCommunityMember(input: object)](#canCommunity.inputCommunityMember)
 
 ## Table diagram and list of supported query:
 
@@ -27,6 +28,7 @@
   - [get community information by community account](#canCommunity.getCommunityByCommunityAccount)
   - [get community information by creator](#canCommunity.getCommunityByCreator)
   - [get access to code in force table](#canCommunity.getAccessTable)
+  - [get members of community](#canCommunity.getCommunityMember)
 - [code](#canCommunity.listCodes)
   - [get list of code of community](#canCommunity.listCodes)
   - [get code by code id](#canCommunity.getCodebyId)
@@ -582,6 +584,29 @@ const input = {
 const result = canCommunity.appointPosition(input, execCodeInput);
 ```
 
+---
+
+<a name="canCommunity.inputCommunityMember"></a>
+
+### Add/Remove member of community:
+
+| Field **(input)**          | Description                                             |
+| -------------------------- | ------------------------------------------------------- |
+| community_account (string) | CAN Account of the Community                            |
+| added_members (string[])   | CAN Account of users to be added into the community     |
+| removed_members (string[]) | CAN Account of users to be removed out of the community |
+
+**Example**
+
+```js
+const input = {
+  community_account: 'community143',
+  added_members: ['cifdemoweb1', 'cifdemoweb2'],
+  removed_members: ['cifdemoweb', 'cifdemoweb3'],
+};
+const result = canCommunity.inputCommunityMember(input);
+```
+
 ## List of supported query:
 
 <a name="canCommunity.tableDiagram"></a>
@@ -658,6 +683,28 @@ const queryOption = {
   upper_bound: 'creator.can',
   index_position: 2,
   key_type: 'i64',
+};
+
+const result = await canCommunity.query(table, queryOption);
+```
+
+---
+
+<a name="canCommunity.getCommunityMember"></a>
+
+- [get members of community table](#canCommunity.getCommunityMember)
+
+### get access to code in force table
+
+| Table     | Scope                  | Index           |
+| --------- | ---------------------- | --------------- |
+| v1.member | community account name | singleton table |
+
+```js
+const table = 'v1.member';
+const queryOption = {
+  scope: community_account,
+  code: 'governance2', // governance2 is version of Governance Designer has v1.member table
 };
 
 const result = await canCommunity.query(table, queryOption);
