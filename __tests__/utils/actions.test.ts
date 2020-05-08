@@ -1,3 +1,4 @@
+import { TextDecoder, TextEncoder } from 'util';
 // tslint:disable:no-implicit-dependencies
 import { serializeActionData, deserializeActionData } from '../../src/utils/actions';
 import app from '../../src/app';
@@ -6,7 +7,7 @@ import { Create } from '../../src/smart-contract-types/Create';
 import { ActionNameEnum } from '../../src/smart-contract-types/ActionNameEnum';
 
 describe('test action util', () => {
-  app.init(options.canUrl, options.fetch);
+  app.init(options.canUrl, options.fetch, TextEncoder, TextDecoder);
 
   it('should pack a hex string - contract action params', async () => {
     const action = ActionNameEnum.CREATE;

@@ -1482,7 +1482,7 @@ describe('test CanCommunity', () => {
       // @ts-ignore
       await cif.configBadge(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.CONFIGBADGE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, undefined, input.badge_id);
     });
 
     it('should issue badge', async () => {
@@ -1493,8 +1493,10 @@ describe('test CanCommunity', () => {
 
       const input: Issuebadge = {
         community_account: 'test-community',
-        badge_propose_name: 'issuebadge',
+        badge_propose_name: 'newcert1234',
       };
+
+      const proposalBadgeId = 711;
       const packedParams = faker.lorem.words();
 
       const execCode = jest.spyOn(cif, 'execCode');
@@ -1510,10 +1512,28 @@ describe('test CanCommunity', () => {
         },
       ];
 
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            proposal_name: 'newcert1234',
+            packed_transaction:
+              'b4ceb55e00000000000000000000010000000000c59239008062c91ca53176020000000000c5923900000000a8ed32328080f0d94d2d254500000000a8ed32324d8080f0d94d2d25450000002244e5a649c7020000000000000100000000000000de000000000000001b61626361736466616a6965726f697175776569727579756973646600000000000000000000',
+          },
+        ],
+      });
+
       // @ts-ignore
       await cif.issueBadge(input);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.ISSUEBADGE, input);
-      expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, undefined);
+      expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, undefined, proposalBadgeId);
+      expect(mockQuery).toBeCalledTimes(1);
+      expect(mockQuery).toBeCalledWith('proposal', {
+        code: process.env.app__can_multisig_account,
+        scope: 'badge',
+        lower_bound: input.badge_propose_name,
+        upper_bound: input.badge_propose_name,
+      });
     });
   });
 

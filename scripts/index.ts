@@ -3,6 +3,7 @@ import helper from './helper';
 
 require('dotenv-extended').load();
 
+import { TextDecoder, TextEncoder } from 'util';
 import _ from 'lodash';
 import fetch from 'node-fetch';
 import fs from 'fs';
@@ -11,7 +12,7 @@ import shell from 'shelljs';
 import { logger } from '../src/utils/logger';
 import app from '../src/app';
 
-app.init(process.env.app__can_main_net_url, fetch);
+app.init(process.env.app__can_main_net_url, fetch, TextEncoder, TextDecoder);
 const rpc = app.rpc;
 
 logger.debug('__dirname', __dirname);
