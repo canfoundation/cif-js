@@ -645,7 +645,7 @@ export class CanCommunity {
       upper_bound: input.badge_propose_name,
     };
 
-    const proposalItems = await this.query('proposal', proposalQueryOption);
+    const proposalItems = await this.query(TableNameEnum.PROPOSAL, proposalQueryOption);
 
     const packedTransaction = proposalItems?.rows[0].packed_transaction;
 
