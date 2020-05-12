@@ -1,10 +1,18 @@
-import { JsonRpc } from 'eosjs/dist';
+import { JsonRpc, Api } from 'eosjs/dist';
+import { JsSignatureProvider } from 'eosjs/dist/eosjs-jssig';
 
 class App {
   rpc: JsonRpc;
+  api: Api;
 
-  init(canUrl: string, fetch: any) {
+  init(canUrl: string, fetch: any, textEncoder, textDecoder) {
     this.rpc = new JsonRpc(canUrl, { fetch });
+    this.api = new Api({
+      rpc: this.rpc,
+      signatureProvider: new JsSignatureProvider([]),
+      textDecoder,
+      textEncoder,
+    });
   }
 }
 

@@ -1,3 +1,4 @@
+import { TextDecoder, TextEncoder } from 'util';
 import utils from '../../src/utils/utils';
 import { options } from '../test-helper';
 import { CODE_IDS } from '../../src/utils/constant';
@@ -5,7 +6,7 @@ import app from '../../src/app';
 import { CodeTypeEnum } from '../../src/types/smart-contract-enum';
 
 describe('test some utility functions', () => {
-  app.init(options.canUrl, options.fetch);
+  app.init(options.canUrl, options.fetch, TextEncoder, TextDecoder);
 
   it('should get normal code id', async () => {
     const get_table_rows = jest.spyOn(app.rpc, 'get_table_rows');

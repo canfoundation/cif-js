@@ -34,7 +34,7 @@ import { Execproposal } from './smart-contract-types/Execproposal';
 import { Voteforcode } from './smart-contract-types/Voteforcode';
 import app from './app';
 import { TableNameEnum } from './smart-contract-types/TableNameEnum';
-import { JsonRpc } from 'eosjs/dist';
+import { Api, JsonRpc } from 'eosjs/dist';
 import { Configpos } from './smart-contract-types/Configpos';
 import { Setaccess } from './smart-contract-types/Setaccess';
 import { RightHolder } from './smart-contract-types/RightHolder';
@@ -52,11 +52,13 @@ import { Inputmembers } from './smart-contract-types/Inputmembers';
 export class CanCommunity {
   public config: CanCommunityOptions;
   public rpc: JsonRpc;
+  public api: Api;
 
   constructor(config: CanCommunityOptions, public canPass?: any) {
-    app.init(config.canUrl, config.fetch);
+    app.init(config.canUrl, config.fetch, config.textEncoder, config.textDecoder);
     this.config = config;
     this.rpc = app.rpc;
+    this.api = app.api;
   }
 
   makeAction(action: string, actor: EosName, input: any) {
@@ -623,7 +625,7 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, execCodeInput);
+    return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, execCodeInput, input.badge_id);
   }
 
   async issueBadge(input: Issuebadge, execCodeInput?: ExecCodeInput): Promise<any> {
@@ -636,7 +638,34 @@ export class CanCommunity {
       },
     ];
 
-    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput);
+    const proposalQueryOption: QueryOptions = {
+      code: process.env.app__can_multisig_account,
+      scope: this.config.cryptoBadgeContractAccount,
+      lower_bound: input.badge_propose_name,
+      upper_bound: input.badge_propose_name,
+    };
+
+    const proposalItems = await this.query(TableNameEnum.PROPOSAL, proposalQueryOption);
+
+    const packedTransaction = proposalItems?.rows[0].packed_transaction;
+
+    const unpackTransaction = await this.api.deserializeTransaction(Buffer.from(packedTransaction, 'hex'));
+
+    if (unpackTransaction.actions.length !== 1) {
+      throw new Error('Issue badge proposal is invalid');
+    }
+
+    if (
+      unpackTransaction.actions[0].account !== this.config.cryptoBadgeContractAccount ||
+      unpackTransaction.actions[0].name !== 'issuebadge'
+    ) {
+      throw new Error('Proposal is not issue badge transaction');
+    }
+
+    const unpackIssueBadgeAction = await this.api.deserializeActions(unpackTransaction.actions);
+    const issuingBadgeId = unpackIssueBadgeAction[0].data.badge_id;
+
+    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput, Number(issuingBadgeId));
   }
 
   execProposal(input: Execproposal) {
