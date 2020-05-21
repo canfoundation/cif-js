@@ -628,44 +628,59 @@ export class CanCommunity {
     return this.execCode(CODE_IDS.CONFIG_BADGE, codeActions, CodeTypeEnum.BADGE_CONFIG, execCodeInput, input.badge_id);
   }
 
-  async issueBadge(input: Issuebadge, execCodeInput?: ExecCodeInput): Promise<any> {
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.ISSUEBADGE, input);
+  async issueBadge(communityAccount: string, proposalNames: string[], execCodeInput?: ExecCodeInput): Promise<any> {
+    const codeActions: ExecutionCodeData[] = [];
 
-    const codeActions: ExecutionCodeData[] = [
-      {
+    let badgeId;
+    for (const proposalName of proposalNames) {
+      const actionData: Issuebadge = {
+        community_account: communityAccount,
+        badge_propose_name: proposalName,
+      };
+
+      const packedParams = await serializeActionData(this.config, ActionNameEnum.ISSUEBADGE, actionData);
+
+      const proposalQueryOption: QueryOptions = {
+        code: process.env.app__can_multisig_account,
+        scope: this.config.cryptoBadgeContractAccount,
+        lower_bound: proposalName,
+        upper_bound: proposalName,
+      };
+
+      const proposalItems = await this.query(TableNameEnum.PROPOSAL, proposalQueryOption);
+
+      const packedTransaction = proposalItems?.rows[0].packed_transaction;
+
+      const unpackTransaction = await this.api.deserializeTransaction(Buffer.from(packedTransaction, 'hex'));
+
+      if (unpackTransaction.actions.length !== 1) {
+        throw new Error('Issue badge proposal is invalid');
+      }
+
+      if (
+        unpackTransaction.actions[0].account !== this.config.cryptoBadgeContractAccount ||
+        unpackTransaction.actions[0].name !== 'issuebadge'
+      ) {
+        throw new Error('Proposal is not issue badge transaction');
+      }
+
+      const unpackIssueBadgeAction = await this.api.deserializeActions(unpackTransaction.actions);
+      const issuingBadgeId = unpackIssueBadgeAction[0].data.badge_id;
+      if (!badgeId) {
+        badgeId = issuingBadgeId;
+      }
+
+      if (badgeId && badgeId !== issuingBadgeId) {
+        throw new Error('Only support issue multiple certifications with one badge');
+      }
+
+      codeActions.push({
         code_action: ActionNameEnum.ISSUEBADGE,
         packed_params: packedParams,
-      },
-    ];
-
-    const proposalQueryOption: QueryOptions = {
-      code: process.env.app__can_multisig_account,
-      scope: this.config.cryptoBadgeContractAccount,
-      lower_bound: input.badge_propose_name,
-      upper_bound: input.badge_propose_name,
-    };
-
-    const proposalItems = await this.query(TableNameEnum.PROPOSAL, proposalQueryOption);
-
-    const packedTransaction = proposalItems?.rows[0].packed_transaction;
-
-    const unpackTransaction = await this.api.deserializeTransaction(Buffer.from(packedTransaction, 'hex'));
-
-    if (unpackTransaction.actions.length !== 1) {
-      throw new Error('Issue badge proposal is invalid');
+      });
     }
 
-    if (
-      unpackTransaction.actions[0].account !== this.config.cryptoBadgeContractAccount ||
-      unpackTransaction.actions[0].name !== 'issuebadge'
-    ) {
-      throw new Error('Proposal is not issue badge transaction');
-    }
-
-    const unpackIssueBadgeAction = await this.api.deserializeActions(unpackTransaction.actions);
-    const issuingBadgeId = unpackIssueBadgeAction[0].data.badge_id;
-
-    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput, Number(issuingBadgeId));
+    return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput, Number(badgeId));
   }
 
   execProposal(input: Execproposal) {

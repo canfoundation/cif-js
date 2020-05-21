@@ -1524,7 +1524,7 @@ describe('test CanCommunity', () => {
       });
 
       // @ts-ignore
-      await cif.issueBadge(input);
+      await cif.issueBadge(input.community_account, [input.badge_propose_name]);
       expect(serializeActionData).toBeCalledWith(_options, ActionNameEnum.ISSUEBADGE, input);
       expect(execCode).toBeCalledWith(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, undefined, proposalBadgeId);
       expect(mockQuery).toBeCalledTimes(1);
