@@ -47,6 +47,7 @@
     }
   },
   "dependencies": {
+    "big-integer": "^1.6.48",
     "eosjs": "^20.0.0"
   },
   "devDependencies": {
