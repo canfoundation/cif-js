@@ -89,7 +89,9 @@ async function findCode(
 function buildReferenceId(itemId: number, codeType: CodeTypeEnum): string {
   // C++ static_cast<uint128_t>(type)  | static_cast<uint128_t>(reference_id) << 64;
   // build id to get code by reference id and code type
-  const resBigInt = bigInt(itemId).shiftLeft(64).value | bigInt(codeType).value;
+  const resBigInt = bigInt(itemId)
+    .shiftLeft(64)
+    .or(bigInt(codeType));
   return resBigInt.toString();
 }
 
