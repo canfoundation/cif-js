@@ -639,7 +639,7 @@ export class CanCommunity {
     ];
 
     const proposalQueryOption: QueryOptions = {
-      code: process.env.app__can_multisig_account,
+      code: process.env.app__can_multisig_account || 'eosio.msig',
       scope: this.config.cryptoBadgeContractAccount,
       lower_bound: input.badge_propose_name,
       upper_bound: input.badge_propose_name,
