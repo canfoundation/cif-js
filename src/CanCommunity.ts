@@ -638,8 +638,6 @@ export class CanCommunity {
       },
     ];
 
-    // console.log('process.env.app__can_multisig_account----', process.env.app__can_multisig_account);
-
     const proposalQueryOption: QueryOptions = {
       code: process.env.app__can_multisig_account || 'eosio.msig',
       scope: this.config.cryptoBadgeContractAccount,
