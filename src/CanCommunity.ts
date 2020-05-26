@@ -6,7 +6,7 @@ import {
   VoteForPositionInput,
 } from './types/can-community-types';
 import { ConfigCodeInput, CodeSetting } from './types/right-holder-type';
-import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD } from './utils/constant';
+import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, MSIG_ACCOUNT } from './utils/constant';
 import { serializeActionData } from './utils/actions';
 import utils from './utils/utils';
 import { logger } from './utils/logger';
@@ -633,7 +633,7 @@ export class CanCommunity {
     ];
 
     const proposalQueryOption: QueryOptions = {
-      code: process.env.app__can_multisig_account || 'eosio.msig',
+      code: MSIG_ACCOUNT,
       scope: this.config.cryptoBadgeContractAccount,
       lower_bound: input.badge_propose_name,
       upper_bound: input.badge_propose_name,
