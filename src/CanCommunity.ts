@@ -39,12 +39,7 @@ import { Configpos } from './smart-contract-types/Configpos';
 import { Setaccess } from './smart-contract-types/Setaccess';
 import { RightHolder } from './smart-contract-types/RightHolder';
 import { Createbadge } from './smart-contract-types/Createbadge';
-import {
-  buildConfigBadgeInput,
-  buildConfigPositionInput,
-  buildCreateBadgeInput,
-  buildCreatePositionInput,
-} from './utils/inputBuilder';
+import { buildConfigPositionInput, buildCreateBadgeInput, buildCreatePositionInput } from './utils/inputBuilder';
 import { Configbadge } from './smart-contract-types/Configbadge';
 import { Issuebadge } from './smart-contract-types/Issuebadge';
 import { Inputmembers } from './smart-contract-types/Inputmembers';
@@ -615,8 +610,7 @@ export class CanCommunity {
   }
 
   async configBadge(input: Configbadge, execCodeInput?: ExecCodeInput): Promise<any> {
-    const serializeInput = buildConfigBadgeInput(input);
-    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGBADGE, serializeInput);
+    const packedParams = await serializeActionData(this.config, ActionNameEnum.CONFIGBADGE, input);
 
     const codeActions: ExecutionCodeData[] = [
       {
