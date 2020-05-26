@@ -7,6 +7,7 @@ import app from '../app';
 import { EosName } from '../smart-contract-types/base-types';
 import { TableNameEnum } from '../smart-contract-types/TableNameEnum';
 import { CodeTypeEnum } from '../types/smart-contract-enum';
+const bigInt = require('big-integer');
 
 function makeCanApi(options: CanCommunityOptions) {
   const { textEncoder, textDecoder } = options;
@@ -88,7 +89,9 @@ async function findCode(
 function buildReferenceId(itemId: number, codeType: CodeTypeEnum): string {
   // C++ static_cast<uint128_t>(type)  | static_cast<uint128_t>(reference_id) << 64;
   // build id to get code by reference id and code type
-  const resBigInt = (BigInt(itemId) << BigInt(64)) | BigInt(codeType);
+  const resBigInt = bigInt(itemId)
+    .shiftLeft(64)
+    .or(bigInt(codeType));
   return resBigInt.toString();
 }
 

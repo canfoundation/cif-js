@@ -1,6 +1,6 @@
 {
   "name": "cif-js",
-  "version": "0.9.44",
+  "version": "0.9.45",
   "description": "cif-js",
   "license": "MIT",
   "repository": {
@@ -47,6 +47,7 @@
     }
   },
   "dependencies": {
+    "big-integer": "^1.6.48",
     "eosjs": "^20.0.0"
   },
   "devDependencies": {
