@@ -3,6 +3,8 @@ export enum SIGN_TRX_METHOD {
   MANUAL = 'MANUAL',
 }
 
+export const MSIG_ACCOUNT = 'eosio.msig';
+
 export enum EXECUTION_TYPE {
   SOLE_DECISION = 0,
   COLLECTIVE_DECISION,
