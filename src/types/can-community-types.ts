@@ -1,5 +1,6 @@
 import { EosName } from '../smart-contract-types/base-types';
-import { SIGN_TRX_METHOD, EXECUTION_TYPE } from '../utils/constant';
+import { EXECUTION_TYPE, SIGN_TRX_METHOD } from '../utils/constant';
+import { SignTrxPayload } from './SignTrxPayLoad';
 
 export interface CanCommunityOptions {
   canUrl: string;
@@ -16,6 +17,7 @@ export interface CanCommunityOptions {
    * this is crypto badge contract CAN account
    */
   cryptoBadgeContractAccount: EosName;
+  payRam?: (signTrxPayload: SignTrxPayload) => Promise<SignTrxPayload>;
 }
 
 export interface SignTrxOption {

@@ -1,3 +1,35 @@
+import { Api, JsonRpc } from 'eosjs/dist';
+
+import app from './app';
+import { ActionNameEnum } from './smart-contract-types/ActionNameEnum';
+import { Appointpos } from './smart-contract-types/Appointpos';
+import { Approvepos } from './smart-contract-types/Approvepos';
+import { Asset, EosName } from './smart-contract-types/base-types';
+import { Configbadge } from './smart-contract-types/Configbadge';
+import { Configpos } from './smart-contract-types/Configpos';
+import { Create } from './smart-contract-types/Create';
+import { Createbadge } from './smart-contract-types/Createbadge';
+import { Createcode } from './smart-contract-types/Createcode';
+import { Createpos } from './smart-contract-types/Createpos';
+import { Dismisspos } from './smart-contract-types/Dismisspos';
+import { Execcode } from './smart-contract-types/Execcode';
+import { Execproposal } from './smart-contract-types/Execproposal';
+import { ExecutionCodeData } from './smart-contract-types/ExecutionCodeData';
+import { Inputmembers } from './smart-contract-types/Inputmembers';
+import { Issuebadge } from './smart-contract-types/Issuebadge';
+import { Nominatepos } from './smart-contract-types/Nominatepos';
+import { Proposecode } from './smart-contract-types/Proposecode';
+import { RightHolder } from './smart-contract-types/RightHolder';
+import { Setaccess } from './smart-contract-types/Setaccess';
+import { Setapprotype } from './smart-contract-types/Setapprotype';
+import { Setapprover } from './smart-contract-types/Setapprover';
+import { Setexectype } from './smart-contract-types/Setexectype';
+import { Setproposer } from './smart-contract-types/Setproposer';
+import { Setsoleexec } from './smart-contract-types/Setsoleexec';
+import { Setvoter } from './smart-contract-types/Setvoter';
+import { Setvoterule } from './smart-contract-types/Setvoterule';
+import { TableNameEnum } from './smart-contract-types/TableNameEnum';
+import { Voteforcode } from './smart-contract-types/Voteforcode';
 import {
   CanCommunityOptions,
   ExecCodeInput,
@@ -5,44 +37,13 @@ import {
   SignTrxOption,
   VoteForPositionInput,
 } from './types/can-community-types';
-import { ConfigCodeInput, CodeSetting } from './types/right-holder-type';
-import { CODE_IDS, EXECUTION_TYPE, SIGN_TRX_METHOD, MSIG_ACCOUNT } from './utils/constant';
-import { serializeActionData } from './utils/actions';
-import utils from './utils/utils';
-import { logger } from './utils/logger';
+import { CodeSetting, ConfigCodeInput } from './types/right-holder-type';
 import { CodeTypeEnum } from './types/smart-contract-enum';
-import { Asset, EosName } from './smart-contract-types/base-types';
-import { Create } from './smart-contract-types/Create';
-import { ActionNameEnum } from './smart-contract-types/ActionNameEnum';
-import { Createcode } from './smart-contract-types/Createcode';
-import { Execcode } from './smart-contract-types/Execcode';
-import { ExecutionCodeData } from './smart-contract-types/ExecutionCodeData';
-import { Proposecode } from './smart-contract-types/Proposecode';
-import { Setexectype } from './smart-contract-types/Setexectype';
-import { Setsoleexec } from './smart-contract-types/Setsoleexec';
-import { Setapprotype } from './smart-contract-types/Setapprotype';
-import { Setapprover } from './smart-contract-types/Setapprover';
-import { Setproposer } from './smart-contract-types/Setproposer';
-import { Setvoter } from './smart-contract-types/Setvoter';
-import { Setvoterule } from './smart-contract-types/Setvoterule';
-import { Nominatepos } from './smart-contract-types/Nominatepos';
-import { Createpos } from './smart-contract-types/Createpos';
-import { Dismisspos } from './smart-contract-types/Dismisspos';
-import { Approvepos } from './smart-contract-types/Approvepos';
-import { Appointpos } from './smart-contract-types/Appointpos';
-import { Execproposal } from './smart-contract-types/Execproposal';
-import { Voteforcode } from './smart-contract-types/Voteforcode';
-import app from './app';
-import { TableNameEnum } from './smart-contract-types/TableNameEnum';
-import { Api, JsonRpc } from 'eosjs/dist';
-import { Configpos } from './smart-contract-types/Configpos';
-import { Setaccess } from './smart-contract-types/Setaccess';
-import { RightHolder } from './smart-contract-types/RightHolder';
-import { Createbadge } from './smart-contract-types/Createbadge';
+import { serializeActionData } from './utils/actions';
+import { CODE_IDS, EXECUTION_TYPE, MSIG_ACCOUNT, SIGN_TRX_METHOD } from './utils/constant';
 import { buildConfigPositionInput, buildCreateBadgeInput, buildCreatePositionInput } from './utils/inputBuilder';
-import { Configbadge } from './smart-contract-types/Configbadge';
-import { Issuebadge } from './smart-contract-types/Issuebadge';
-import { Inputmembers } from './smart-contract-types/Inputmembers';
+import { logger } from './utils/logger';
+import utils from './utils/utils';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -76,9 +77,11 @@ export class CanCommunity {
     switch (signOption.signTrxMethod) {
       case SIGN_TRX_METHOD.MANUAL:
         return trx;
-      case SIGN_TRX_METHOD.CAN_PASS:
       default:
-        return this.canPass.signTx(trx);
+        // set default value of the the broadcast to false so that
+        // we can add more signatures to the transaction before broadcasting it
+        const broadcast = !this.config.payRam;
+        return this.canPass.signTx(trx, { broadcast });
     }
   }
 
@@ -151,7 +154,12 @@ export class CanCommunity {
       };
     }
 
-    return this.signTrx(trx);
+    return this.signTrx(trx).then(res => {
+      if (this.config.payRam) {
+        return this.config.payRam(res).then(() => res);
+      }
+      return res;
+    });
   }
 
   async isAccessHolder(communityAccount: EosName, account: EosName) {
