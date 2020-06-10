@@ -81,7 +81,7 @@ export class CanCommunity {
         // set default value of the the broadcast to false so that
         // we can add more signatures to the transaction before broadcasting it
         const broadcast = !this.config.payRam;
-        return this.canPass.signTx(trx, { broadcast });
+        return this.canPass.signTx(trx, undefined, { broadcast });
     }
   }
 
@@ -155,7 +155,7 @@ export class CanCommunity {
     }
 
     return this.signTrx(trx).then(res => {
-      if (this.config.payRam) {
+      if (this.config.payRam && !res.broadcast) {
         return this.config.payRam(res).then(() => res);
       }
       return res;

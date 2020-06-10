@@ -1,6 +1,6 @@
 export interface SignTrxPayload {
   signatures: [string];
-  serializedTransaction: Unit8Array;
+  serializedTransaction: any;
   transactionId: string;
   clientMutationId: string;
 }
