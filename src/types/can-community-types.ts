@@ -20,6 +20,10 @@ export interface CanCommunityOptions {
   payRam?: (signTrxPayload: SignTrxPayload) => Promise<SignTrxPayload>;
 }
 
+interface Authorization {
+  actor: EosName;
+  permission: string;
+}
 export interface SignTrxOption {
   /**
    * This param is required if the signing transaction method is Can-Pass
@@ -34,6 +38,10 @@ export interface SignTrxOption {
   canAccount: EosName;
 
   communityCanAccount: EosName;
+
+  payer?: string;
+
+  addAuths?: Authorization[];
 }
 
 export interface ExecCodeInput {
