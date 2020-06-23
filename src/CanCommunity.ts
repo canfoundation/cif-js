@@ -73,7 +73,7 @@ export class CanCommunity {
   signTrx(trx: any, signOption: SignTrxOption = this.config.signOption) {
     logger.debug('signOption.signTrxMethod', signOption?.signTrxMethod);
 
-    const { signTrxMethod, payer, addAuths } = signOption;
+    const { signTrxMethod, addAuths } = signOption;
 
     switch (signTrxMethod) {
       case SIGN_TRX_METHOD.MANUAL:
@@ -82,7 +82,7 @@ export class CanCommunity {
         // set default value of the the broadcast to false so that
         // we can add more signatures to the transaction before broadcasting it
         const broadcast = !this.config.payRam;
-        return this.canPass.signTx(trx, undefined, { broadcast, payer, addAuths });
+        return this.canPass.signTx(trx, { broadcast, addAuths });
     }
   }
 
