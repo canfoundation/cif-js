@@ -76,7 +76,7 @@ describe('test CanCommunity', () => {
       };
       const rs = cif.signTrx(trx, signOption);
       expect(spySignTrx).toBeCalledWith(trx, signOption);
-      expect(spySignTx).toBeCalledWith(trx, undefined, signOts);
+      expect(spySignTx).toBeCalledWith(trx, signOts);
       expect(rs).toEqual(trx);
     });
 
