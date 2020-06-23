@@ -1,3 +1,4 @@
+// import { logger } from './../src/utils/logger';
 // tslint:disable:no-implicit-dependencies
 import * as faker from 'faker';
 import _ from 'lodash';
@@ -33,7 +34,7 @@ import { Inputmembers } from '../src/smart-contract-types/Inputmembers';
 
 describe('test CanCommunity', () => {
   const canPass: any = {
-    signTx: jest.fn(),
+    signTx: jest.fn().mockResolvedValue(true),
   };
 
   it('should make action', async () => {
@@ -59,13 +60,15 @@ describe('test CanCommunity', () => {
   describe('should select method for singing trx', () => {
     const cif = new CanCommunity(options, canPass);
     const spySignTx = canPass.signTx;
+
     beforeEach(async () => {
-      spySignTx.mockRestore();
+      spySignTx.mockClear();
     });
 
     it('has signOption with CAN_PASS as method', async () => {
       const spySignTrx = jest.spyOn(cif, 'signTrx');
-      const trx = {};
+      const trx = Promise.resolve({});
+      const signOts = { broadcast: true };
       const signOption: SignTrxOption = {
         ...options.signOption,
         userId: faker.random.uuid(),
@@ -73,8 +76,8 @@ describe('test CanCommunity', () => {
       };
       const rs = cif.signTrx(trx, signOption);
       expect(spySignTrx).toBeCalledWith(trx, signOption);
-      expect(spySignTx).toBeCalledWith(trx);
-      expect(rs).toEqual(undefined);
+      expect(spySignTx).toBeCalledWith(trx, signOts);
+      expect(rs).toEqual(trx);
     });
 
     it('has signOption with MANUAL as method', async () => {

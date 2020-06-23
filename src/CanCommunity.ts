@@ -73,12 +73,16 @@ export class CanCommunity {
   signTrx(trx: any, signOption: SignTrxOption = this.config.signOption) {
     logger.debug('signOption.signTrxMethod', signOption?.signTrxMethod);
 
-    switch (signOption.signTrxMethod) {
+    const { signTrxMethod, addAuths } = signOption;
+
+    switch (signTrxMethod) {
       case SIGN_TRX_METHOD.MANUAL:
         return trx;
-      case SIGN_TRX_METHOD.CAN_PASS:
       default:
-        return this.canPass.signTx(trx);
+        // set default value of the the broadcast to false so that
+        // we can add more signatures to the transaction before broadcasting it
+        const broadcast = !this.config.payRam;
+        return this.canPass.signTx(trx, { broadcast, addAuths });
     }
   }
 
@@ -151,7 +155,12 @@ export class CanCommunity {
       };
     }
 
-    return this.signTrx(trx);
+    return this.signTrx(trx).then(res => {
+      if (this.config.payRam && !res.broadcast) {
+        return this.config.payRam(res).then(() => res);
+      }
+      return res;
+    });
   }
 
   async isAccessHolder(communityAccount: EosName, account: EosName) {
