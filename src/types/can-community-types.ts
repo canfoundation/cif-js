@@ -39,8 +39,6 @@ export interface SignTrxOption {
 
   communityCanAccount: EosName;
 
-  payer?: string;
-
   addAuths?: Authorization[];
 }
 
