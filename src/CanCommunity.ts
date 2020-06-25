@@ -319,7 +319,7 @@ export class CanCommunity {
       actions: [
         {
           account: 'eosio.token',
-          authorization: [{ actor: input.creator, permission: 'active' }],
+          authorization: [{ actor: payer ? payer : input.creator, permission: 'active' }],
           data: {
             from: payer ? payer : input.creator,
             memo: payer ? `${input.community_account}-${input.creator}` : input.community_account,

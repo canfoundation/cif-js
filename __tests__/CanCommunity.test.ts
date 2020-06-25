@@ -720,6 +720,52 @@ describe('test CanCommunity', () => {
     });
   });
 
+  it('should payer transfer token to create community for creator', async () => {
+    const _options = _.cloneDeep(options);
+    _options.signOption.userId = faker.random.uuid();
+
+    const cif = new CanCommunity(_options, canPass);
+
+    const payer = 'daniel111111';
+
+    const input: Create = {
+      creator: _options.signOption.canAccount,
+      community_account: utils.randomEosName(),
+      community_name: faker.lorem.words(),
+      member_badge: new Array(faker.random.number({ max: 10 })).fill(0).map(() => faker.random.number()),
+      community_url: faker.internet.url(),
+      description: faker.lorem.paragraph(),
+      create_default_code: faker.random.boolean(),
+    };
+
+    const signTrx = jest.spyOn(cif, 'signTrx');
+    const initialCAT = `${faker.random.number()}.0000 CAT`;
+
+    cif.createCommunity(input, initialCAT, payer);
+
+    expect(signTrx).toBeCalledWith({
+      actions: [
+        {
+          account: 'eosio.token',
+          authorization: [{ actor: payer, permission: 'active' }],
+          data: {
+            from: payer,
+            memo: input.community_account + '-' + input.creator,
+            quantity: initialCAT,
+            to: _options.code,
+          },
+          name: 'transfer',
+        },
+        {
+          account: _options.code,
+          authorization: [{ actor: options.signOption.canAccount, permission: 'active' }],
+          data: input,
+          name: ActionNameEnum.CREATE,
+        },
+      ],
+    });
+  });
+
   describe('the same pattern functions 1', () => {
     it('should createCode', async () => {
       const _options = _.cloneDeep(options);
