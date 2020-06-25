@@ -198,7 +198,7 @@ export class CanCommunity {
           lower_bound: codeId,
           upper_bound: codeId,
         });
-        if (codeExecRuleTable.rows.length === 0) {
+        if (codeExecRuleTable?.rows?.[0]?.code_id !== codeId) {
           return false;
         }
         codeExecRule = codeExecRuleTable.rows[0];
@@ -209,20 +209,20 @@ export class CanCommunity {
       if (isAmendCode) {
         // if it is amendment code, get right holder from amenvoterule table
         const amendVoteRuleTable = await this.query(TableNameEnum.V1_AMENVOTE, {
-          lower_bound: 1,
-          upper_bound: 1,
+          lower_bound: codeId,
+          upper_bound: codeId,
         });
-        if (amendVoteRuleTable.rows.length === 0) {
+        if (amendVoteRuleTable?.rows?.[0]?.code_id !== codeId) {
           return false;
         }
         codeVoteRule = amendVoteRuleTable.rows[0];
       } else {
         // if it is amendment code, get right holder from codevoterule table
         const codeVoteRuleTable = await this.query(TableNameEnum.V1_CODEVOTE, {
-          lower_bound: 1,
-          upper_bound: 1,
+          lower_bound: codeId,
+          upper_bound: codeId,
         });
-        if (codeVoteRuleTable.rows.length === 0) {
+        if (codeVoteRuleTable?.rows?.[0]?.code_id !== codeId) {
           return false;
         }
         codeVoteRule = codeVoteRuleTable.rows[0];
@@ -239,9 +239,14 @@ export class CanCommunity {
       return true;
     }
 
-    // TODO check the case that is_any_community_member
-    if (rightHolder.is_any_community_member || rightHolder.is_anyone) {
-      return true;
+    if (rightHolder.is_any_community_member) {
+      const communityMember = await this.query(TableNameEnum.V1_MEMBER, {
+        upper_bound: account,
+        lower_bound: account,
+      });
+      if (communityMember?.rows?.[0]?.member === account) {
+        return true;
+      }
     }
 
     // check right holder is set or not

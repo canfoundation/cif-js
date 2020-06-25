@@ -365,7 +365,7 @@ describe('test CanCommunity', () => {
       mockQuery.mockResolvedValueOnce({
         rows: [
           {
-            code_id: 0,
+            code_id: 1,
             right_executor: {
               is_anyone: 1,
               is_any_community_member: 0,
@@ -383,6 +383,88 @@ describe('test CanCommunity', () => {
       const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
       expect(res).toBe(true);
       expect(mockQuery).toBeCalledWith(TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+    });
+
+    it('should return true if right holder is any community member and user is community member', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 1,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 1,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            member: account,
+          },
+        ],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
+      expect(res).toBe(true);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_MEMBER, { lower_bound: account, upper_bound: account });
+    });
+
+    it('should return false if right holder is any community member and user is not community member', async () => {
+      const _options = _.cloneDeep(options);
+      _options.signOption.userId = faker.random.uuid();
+
+      const account = 'daniel111111';
+      const codeId = 1;
+
+      const cif = new CanCommunity(_options, canPass);
+      const mockQuery = jest.spyOn(cif, 'query');
+      mockQuery.mockResolvedValueOnce({
+        rows: [
+          {
+            code_id: 1,
+            right_executor: {
+              is_anyone: 0,
+              is_any_community_member: 1,
+              required_badges: [],
+              required_positions: [],
+              required_tokens: [],
+              required_exp: 0,
+              accounts: [],
+            },
+          },
+        ],
+        more: false,
+      });
+
+      mockQuery.mockResolvedValueOnce({
+        rows: [],
+        more: false,
+      });
+
+      const res = await cif.isRightHolderOfCode(codeId, account, EXECUTION_TYPE.SOLE_DECISION, 'createcode');
+      expect(res).toBe(false);
+      expect(mockQuery).toBeCalledWith(TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(1, TableNameEnum.V1_CODEEXEC, { lower_bound: codeId, upper_bound: codeId });
+      expect(mockQuery).toHaveBeenNthCalledWith(2, TableNameEnum.V1_MEMBER, { lower_bound: account, upper_bound: account });
     });
 
     it('should return false if user account is not includes in right accounts', async () => {
