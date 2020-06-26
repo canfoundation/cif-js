@@ -43,6 +43,7 @@ import { buildConfigPositionInput, buildCreateBadgeInput, buildCreatePositionInp
 import { Configbadge } from './smart-contract-types/Configbadge';
 import { Issuebadge } from './smart-contract-types/Issuebadge';
 import { Inputmembers } from './smart-contract-types/Inputmembers';
+import { Action } from 'eosjs/dist/eosjs-serialize';
 
 export class CanCommunity {
   public config: CanCommunityOptions;
@@ -659,19 +660,17 @@ export class CanCommunity {
 
     const unpackTransaction = await this.api.deserializeTransaction(Buffer.from(packedTransaction, 'hex'));
 
-    if (unpackTransaction.actions.length !== 1) {
-      throw new Error('Issue badge proposal is invalid');
+    const unpackIssueBadgeActions: Action[] = await this.api.deserializeActions(unpackTransaction.actions);
+    let issuingBadgeId;
+    for (const action of unpackIssueBadgeActions) {
+      if (action.account === 'badge' && action.name === 'issuebadge') {
+        issuingBadgeId = action.data.badge_id;
+      }
     }
 
-    if (
-      unpackTransaction.actions[0].account !== this.config.cryptoBadgeContractAccount ||
-      unpackTransaction.actions[0].name !== 'issuebadge'
-    ) {
-      throw new Error('Proposal is not issue badge transaction');
+    if (isNaN(issuingBadgeId)) {
+      throw new Error('issue badge action is not exist in proposal');
     }
-
-    const unpackIssueBadgeAction = await this.api.deserializeActions(unpackTransaction.actions);
-    const issuingBadgeId = unpackIssueBadgeAction[0].data.badge_id;
 
     return this.execCode(CODE_IDS.ISSUE_BADGE, codeActions, CodeTypeEnum.BADGE_ISSUE, execCodeInput, Number(issuingBadgeId));
   }
