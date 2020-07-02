@@ -8,8 +8,11 @@
   - [common input type](#commonInputType)
   - [.createCommunity(input: object)](#canCommunity.createCommunity)
   - [.setAccess(input: object)](#canCommunity.setAccess)
+  - [.isAccessHolder(communityAccount: EosName, account: EosName)](#canCommunity.isAccessHolder)
   - [.createCode(input: object)](#canCommunity.createCode)
   - [.configCode(input: object)](#canCommunity.configCode)
+  - [.isRightHolderOfCode(codeId: number, account: EosName, execType: EXECUTION_TYPE, action: string)](#canCommunity.isRightHolderOfCode)
+  - [.checkRightHolder(rightHolder: RightHolder, account: EosName)](#canCommunity.checkRightHolder)
   - [.execCode(...input)](#canCommunity.execCode)
   - [.voteForCode(input: object)](#canCommunity.voteForCode)
   - [.createPosition(input: object)](#canCommunity.createPosition)
@@ -20,6 +23,10 @@
   - [.appointPosition(input: object)](#canCommunity.appointPosition)
   - [.dismissPosition(input: object)](#canCommunity.dismissPosition)
   - [.inputCommunityMember(input: object)](#canCommunity.inputCommunityMember)
+  - [.createBadge(input: object)](#canCommunity.createBadge)
+  - [.configBadge(input: object)](#canCommunity.configBadge)
+  - [.issueBadge(input: object)](#canCommunity.issueBadge)
+  - [.execProposal(input: object)](#canCommunity.execProposal)
 
 ## Table diagram and list of supported query:
 
@@ -270,6 +277,31 @@ const result = canCommunity.setAccess(input);
 
 ---
 
+<a name="canCommunity.isAccessHolder"></a>
+
+- [.isAccessHolder(communityAccount: EosName, account: EosName)](#canCommunity.isAccessHolder)
+
+### Check account has permission to access code in force
+
+**input**
+
+| Field **(input)**          | Description                             |
+| -------------------------- | --------------------------------------- |
+| communityAccount (EosName) | CAN Account of the Community            |
+| account (EosName)          | account want to check access permission |
+
+**output**
+
+| Output **(output)** | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| boolean             | true if account can access CIF and false if can not |
+
+```js
+const result = canCommunity.isAccessHolder('community1.c', 'daniel111111');
+```
+
+---
+
 <a name="canCommunity.createCode"></a>
 
 ### Create a code **[API doc](http://git.baikal.io/can/governance-designer#create-a-code)**
@@ -350,6 +382,58 @@ const input = {
   },
 };
 const result = canCommunity.configCode(input);
+```
+
+---
+
+<a name="canCommunity.isRightHolderOfCode"></a>
+
+[.isRightHolderOfCode(codeId: number, account: EosName, execType: EXECUTION_TYPE, action: string)](#canCommunity.isRightHolderOfCode)
+
+### Check if account has permission to execute code with execType
+
+| Field **(input)**         | Description                            |
+| ------------------------- | -------------------------------------- |
+| codeId (number)           | Id of the Code                         |
+| account (EosName)         | account to check right holder          |
+| execType (EXECUTION_TYPE) | execution type account want to execute |
+| action (string)           | action of code want to execute         |
+
+**Example**
+
+```js
+const result = canCommunity.isRightHolderOfCode(1, 'daniel111111', EXECUTION_TYPE.COLLECTIVE_DECISION, 'createcode');
+```
+
+---
+
+<a name="canCommunity.checkRightHolder"></a>
+
+- [.checkRightHolder(rightHolder: RightHolder, account: EosName)](#canCommunity.checkRightHolder)
+
+### Check that account has right in that Right Holder
+
+| Field **(input)**         | Description                   |
+| ------------------------- | ----------------------------- |
+| rightHolder (RightHolder) | Right Holder object           |
+| account (EosName)         | account to check right holder |
+
+**Example**
+
+```javascript
+// expected to be true
+const result = canCommunity.checkRightHolder(
+  {
+    is_anyone: false,
+    is_any_community_member: false,
+    required_badges: [],
+    required_positions: [],
+    required_tokens: [],
+    required_exp: [],
+    accounts: ['daniel111111'],
+  },
+  'daniel111111',
+);
 ```
 
 ---
@@ -645,6 +729,159 @@ const input = {
   removed_members: ['cifdemoweb', 'cifdemoweb3'],
 };
 const result = canCommunity.inputCommunityMember(input);
+```
+
+---
+
+<a name="canCommunity.createBadge"></a>
+
+- [.createBadge(input: object)](#canCommunity.createBadge)
+
+### Create new badge
+
+| Field **(input)**                       | Description                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------- |
+| community_account (EosName)             | CAN Account of the Community                                           |
+| issue_type (number)                     | 0 if issue WITHOUT_CLAIM or 1 if CLAIM_APPROVE_BY_ISSUER               |
+| badge_propose_name (string[])           | multiple signature proposal name to create badge                       |
+| issue_exec_type (number)                | execution type of issue badge code                                     |
+| right_issue_sole_executor (RightHolder) | right holder who can execute issue badge code in case of sole decision |
+| right_issue_proposer (RightHolder)      | right holder who can create issue badge proposal                       |
+| issue_approval_type (number)            | approval type of issue badge code                                      |
+| right_issue_approver (RightHolder)      | right holder who can approve issue badge proposal                      |
+| right_issue_voter (RightHolder)         | right holder who can vote for proposal                                 |
+| issue_pass_rule (number)                | percent of proposal pass rule                                          |
+| issue_vote_duration (number)            | duration to vote for issue badge code proposal                         |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | (Optional) Execution type user want to execute, default is SOLE_DECISION        |
+
+**Example**
+
+```javascript
+const createBadgeInput = {
+  community_account: 'community143',
+  issue_type: 0,
+  badge_propose_name: 'newbadge1234',
+  issue_exec_type: ExecutionType.BOTH,
+  right_issue_sole_executor: {
+    is_anyone: false,
+    is_any_community_member: false,
+    required_badges: [],
+    required_positions: [],
+    required_tokens: [],
+    required_exp: [],
+    accounts: ['executor1234'],
+  },
+  right_issue_proposer: {
+    is_anyone: false,
+    is_any_community_member: false,
+    required_badges: [],
+    required_positions: [],
+    required_tokens: [],
+    required_exp: [],
+    accounts: ['proposer1234'],
+  },
+  right_issue_voter: {
+    is_anyone: false,
+    is_any_community_member: false,
+    required_badges: [],
+    required_positions: [],
+    required_tokens: [],
+    required_exp: [],
+    accounts: ['voter1111111'],
+  },
+  issue_approval_type: ApprovalType.BOTH_TYPE,
+  issue_pass_rule: 80,
+  issue_vote_duration: 24 * 60 * 60, // one day in second
+};
+const result = await canCommunity.createBadge(createBadgeInput);
+```
+
+---
+
+<a name="canCommunity.configBadge"></a>
+
+- [.configBadge(input: object)](#canCommunity.configBadge)
+
+### Configuration of badge
+
+| Field **(input)**                   | Description                                              |
+| ----------------------------------- | -------------------------------------------------------- |
+| community_account (EosName)         | CAN Account of the Community                             |
+| badge_id (number)                   | id of badge want to update                               |
+| update_badge_proposal_name (string) | multiple signature proposal name of update badge action  |
+| issue_type (string)                 | 0 if issue WITHOUT_CLAIM or 1 if CLAIM_APPROVE_BY_ISSUER |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | (Optional) Execution type user want to execute, default is SOLE_DECISION        |
+
+**Example**
+
+```javascript
+const createBadgeInput = {
+  community_account: 'community143',
+  issue_type: 0,
+  update_badge_proposal_name: 'newbadge1234',
+  issue_exec_type: ExecutionType.BOTH,
+  badge_id: 10,
+};
+const result = await canCommunity.configBadge(createBadgeInput);
+```
+
+---
+
+<a name="canCommunity.issueBadge"></a>
+
+- [.issueBadge(input: object)](#canCommunity.issueBadge)
+
+### issue badge
+
+| Field **(input)**           | Description                                            |
+| --------------------------- | ------------------------------------------------------ |
+| community_account (EosName) | CAN Account of the Community                           |
+| badge_propose_name (string) | multiple signature proposal name of issue badge action |
+
+| Field **(execCodeInput)** | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| proposal_name             | (Optional) Proposal name if propose code, if not specify, sdk will generate one |
+| user_exec_type            | (Optional) Execution type user want to execute, default is SOLE_DECISION        |
+
+**Example**
+
+```javascript
+const issueBadge = {
+  community_account: 'community143',
+  badge_propose_name: 'newcert12345',
+};
+const result = await canCommunity.issueBadge(issueBadge);
+```
+
+---
+
+<a name="canCommunity.execProposal"></a>
+
+- [.execProposal(input: object)](#canCommunity.execProposal)
+
+### execute code proposal
+
+| Field **(input)**           | Description                  |
+| --------------------------- | ---------------------------- |
+| community_account (EosName) | CAN Account of the Community |
+| proposal_name (string)      | code proposal to execute     |
+
+**Example**
+
+```javascript
+const issueBadge = {
+  community_account: 'community143',
+  proposal_name: 'newcode12345',
+};
+const result = await canCommunity.issueBadge(issueBadge);
 ```
 
 ## List of supported query:
