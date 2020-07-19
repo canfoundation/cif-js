@@ -117,7 +117,9 @@ export class CanCommunity {
     let trx;
     const codeExecType = codeType === CodeTypeEnum.AMENDMENT ? code.amendment_exec_type : code.code_exec_type;
 
+    // if user want to execute this code as collective decision follow, create new code proposal
     if (execCodeInput.user_exec_type === EXECUTION_TYPE.COLLECTIVE_DECISION) {
+      // check if user want to execute code with collective decision but code execution type is sole decision
       if (codeExecType === EXECUTION_TYPE.SOLE_DECISION) {
         throw new Error('Can not create proposal for sole decision code');
       }
