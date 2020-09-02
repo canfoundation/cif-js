@@ -189,7 +189,7 @@ function buildCreateBadgeInput(rawInput: Createbadge) {
         required_exp: rawInput.right_issue_approver.required_exp || 0,
         accounts: rawInput.right_issue_approver.accounts || [],
       },
-      issue_approval_type: ApprovalType.SOLE_APPROVAL,
+      issue_approval_type: rawInput.issue_approval_type || ApprovalType.SOLE_APPROVAL,
       right_issue_voter: {
         is_anyone: rawInput.right_issue_voter.is_anyone || false,
         is_any_community_member: rawInput.right_issue_voter.is_any_community_member || false,
@@ -199,8 +199,8 @@ function buildCreateBadgeInput(rawInput: Createbadge) {
         required_exp: rawInput.right_issue_voter.required_exp || 0,
         accounts: rawInput.right_issue_voter.accounts || [],
       },
-      issue_vote_duration: 0,
-      issue_pass_rule: 0,
+      issue_vote_duration: rawInput.issue_vote_duration || 0,
+      issue_pass_rule: rawInput.issue_pass_rule || 0,
     };
   }
 
